@@ -24,11 +24,11 @@ class Lexer	//词法分析类
 		Lexer();		//构造函数 
 		void analysis(char filename[]);
 		void Disp();
-		int IDIndex;//标识符数组索引
-		int KeyIndex;//关键字数组索引
-		int ConstIndex;//常量数组索引
-		int OperatorIndex;//操作数数组索引
-		int CommentIndex;//注释数组索引 
+//		int IDIndex;//标识符数组索引
+//		int KeyIndex;//关键字数组索引
+//		int ConstIndex;//常量数组索引
+//		int OperatorIndex;//操作数数组索引
+//		int CommentIndex;//注释数组索引 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
@@ -40,7 +40,12 @@ class Lexer	//词法分析类
 		int  linecount;			//行号计数器
 		vector<token> tokenlist;//存放自动机识别出来的词
 		int vectorindex;		//tokenlist的取词索引
-		vector<int>  Id;//对于tokenlist中的词分类后将索引存放在对应数组中 
+		//对于tokenlist中的词分类后将索引存放在对应数组中
+		vector<int> Id;			//放标识符的索引 
+		vector<int> Key; 		//放关键字的索引
+		vector<int> Const;		//放常量的索引
+		vector<int> Operator;	//放操作符的索引 
+		vector<int> Comment;	//放注释的索引 
 };
 
 #endif

@@ -4,8 +4,9 @@
 using namespace std;
 int main()
 {
-	printf("----");
+	printf("----------------------------------------\n");
 	Lexer L;
+
 	printf("½áÊø");
 	getchar();
 	getchar();
