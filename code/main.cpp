@@ -6,6 +6,9 @@ int main()
 {
 	printf("----");
 	Lexer L;
-	
+	printf("½áÊø");
+	getchar();
+	getchar();
+	 
 	
  } 
