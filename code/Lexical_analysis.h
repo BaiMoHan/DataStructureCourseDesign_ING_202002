@@ -9,7 +9,7 @@ typedef enum{		//定义词法需要的识别码
 	LONG_CONST,CHAR_CONST,VOID,RETURN,IF,ELSE,WHILE,FOR,BREAK,CONTINUE,ADD,REDUCE,
 	MUTIPLEY,DIVIDE,ADDSELF,DIVIDESELF,ASSIGN,EQ,ADD_EQ,DIVIDE_EQ,NUM,STRING_CONST,
 	SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,INT,DOUBLE,CHAR,LONG,LESS,GRETER,MOD,NOTEQ,
-	BRACKETL,BRACKETR,AND,OR,INCLUDE,OTHERS,ENDFILE,COMMENT,ID,FLOAT 
+	BRACKETL,BRACKETR,AND,OR,INCLUDE,OTHERS,ENDFILE,COMMENT,ID,FLOAT,CONST 
 }TokenType; 	//定义各类单词的类别码 
 typedef struct token{
 	TokenType tokentype;	//词的识别码
@@ -24,11 +24,6 @@ class Lexer	//词法分析类
 		Lexer();		//构造函数 
 		void analysis(char filename[]);
 		void Disp();
-//		int IDIndex;//标识符数组索引
-//		int KeyIndex;//关键字数组索引
-//		int ConstIndex;//常量数组索引
-//		int OperatorIndex;//操作数数组索引
-//		int CommentIndex;//注释数组索引 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
