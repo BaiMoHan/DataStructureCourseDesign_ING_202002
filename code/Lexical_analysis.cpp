@@ -48,9 +48,9 @@ void Lexer::analysis(char filename[])
 		getchar();getchar();				//等待用户输入字符,留出信息显示时间 
 		exit(-1) ; 				//关闭程序 
 	}
-	int i=0;
+	int i=0;					//循环计数器变量 
 	char ch;					//定义一个字符中间变量 
-	string str="";				//定义识别字符序列存放变量 
+	string str="",tempstr;				//定义识别字符序列存放变量 
 	token t;	//定义中间变量t,为了存放至tokenlist中
 	while((ch=fgetc(fp))!=EOF)	//当未读到文件末尾时，进行状态自动机识别 			fseek(fp,-1,SEEK_CUR);
 	{
@@ -168,8 +168,111 @@ void Lexer::analysis(char filename[])
 				str="";			//重置拼接字符串 
 		 	}//处理数字型常量状态结束  
 		}//处理数字常量状态结束		//while('0'<=ch&&ch<='9');	//不是数字字符就不再读取字符 
-	//	switch(ch){		//处理其他字符情况 
-			
+		
+		if(ch=='#')	//考虑时#include<XXXX>声明 
+		{
+			for(i=0;i<7;i++)
+			{
+				ch=fgetc(fp);	//读取8个字符,理想情况读到#include处 
+				str+=ch;		//注意#未加入 
+				if(ch==-1)		//读到文件末尾
+					break;		//提前退出 
+			}
+//			string tempstr;		//定义一个临时string类对象 
+			tempstr="include";	//存放理想字符串情况 
+			if(str==tempstr)	//如果两字符串相等
+			{	
+			 //先将关键字include加入 
+				t.linenum=linecount;	//更新include的行号
+				t.tokenstring=tempstr;	//更新inlclude自身字符串
+				t.tokentype=INCLUDE;	//更新自身识别码
+				t.times=0;				//关键字不需要记录出现次数
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Key.push_back(vectorindex);//记录include在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增 
+				str="";					//重置拼接串 
+				
+				//考虑文件名引用形式错误
+				ch=fgetc(fp);	//读取下一个字符，即库引用部分
+				while(ch==' ')	//过滤之间的空格
+					ch=fgetc(fp);//读取下一个字符,知道非空格为止 
+					
+				if(ch=='<')	//匹配库引用符号,前引用符号匹配成功 
+				{
+					str+=ch;		//将引用库文件前括号加入拼接串中 
+					for(i=0;ch!='\n';i++)		//遇到换行就退出,库名过滤 
+					{
+						ch=fgetc(fp);//读取下一个字符
+						str+=ch;	//拼接 
+						if(ch=='>')	//要与前引用符号匹配
+							break;	//退出循环 
+					 } 
+					if(ch=='\n')	//如果是换行退出的，说明引用库格式错误
+					{
+						printf("ERROR:Bad file name format in include directive;Located on line NO.%d\n",linecount);
+						str="";		//重置拼接 
+						fseek(fp,-1,SEEK_CUR);	//将回车符回退 
+					 } 
+					else 	//因为匹配符号退出的,说明格式正确
+					{
+						t.linenum=linecount;	//更新<xxxx>的行号
+						t.tokenstring=str;		//更新库形式完整串
+						t.times=0;				//不需要记录库名出现的次数
+						t.tokentype=STRING_CONST;//把库名当成字符串常量来处理
+						tokenlist.push_back(t);	//加入到tokenlist中去
+						Const.push_back(vectorindex);//保留字符串常量在tokenlist中的记录
+						vectorindex++;			//tokenlist索引自增
+						str="";					//重置拼接 
+					 } 
+				}//对<的库名匹配状态结束 
+				
+				else if(ch=='"')	//匹配库引用符号,前引用符号匹配成功 
+				{
+					str+=ch;		//将引用库文件前括号加入拼接串中 
+					for(i=0;ch!='\n';i++)		//遇到换行就退出,库名过滤 
+					{
+						ch=fgetc(fp);//读取下一个字符
+						str+=ch;	//拼接 
+						if(ch=='"')	//要与前引用符号匹配
+							break;	//退出循环 
+					 } 
+					if(ch=='\n')	//如果是换行退出的，说明引用库格式错误
+					{
+						printf("ERROR:Bad file name format in include directive;Located on line NO.%d",linecount);
+						str="";		//重置拼接 
+						fseek(fp,-1,SEEK_CUR);	//将回车符回退 
+					 } 
+					else 	//因为匹配符号退出的,说明格式正确
+					{
+						t.linenum=linecount;	//更新<xxxx>的行号
+						t.tokenstring=str;		//更新库形式完整串
+						t.times=0;				//不需要记录库名出现的次数
+						t.tokentype=STRING_CONST;//把库名当成字符串常量来处理
+						tokenlist.push_back(t);	//加入到tokenlist中去
+						Const.push_back(vectorindex);//保留字符串常量在tokenlist中的记录
+						vectorindex++;			//tokenlist索引自增
+						str="";					//重置拼接 
+					 } 
+				}//对“”的库名匹配状态结束 
+				else	//库引用格式不对错误
+				{
+					printf("ERROR:Bad file name format in include directive;Located on line NO.%d",linecount);
+				 } 
+			}
+			else 				//两字符串不等，说明#是非法的标识符
+			{	//输出非法字符提示错误 
+				printf("ERROR:Illegal character '#';Located on line No.%d",linecount); 
+				str="";			//重置拼接串 
+				rewind(fp);		//将文件指针移到开头
+				ch=fgetc(fp);	//开头#已经处理，直接读下一个字符 
+			 } 
+//			fseek(fp,-i-1,SEEK_CUR);	//将文件指针前移(i+1)个单位,即返回多读的字符 
+		 }//处理#状态结束 
+		//处理操作符 
+//		switch(ch){	//处理其他字符情况 
+//			case '+':break;
+//		
+//		}		 
 	}	//end of while(ch!=EOF)
 	fclose(fp); 
 }
@@ -227,24 +330,24 @@ void Lexer::PrintWords()
 	int i;	//循环变量
 	printf("--------------------------------------------------");
 	printf("\n标识符：\n"); 
-	cout<<Const.size();
 	for(i=0;i<Id.size();i++)		//按顺序输出所有识别到的标识符 
 	{ 
 		cout<<std::left<<setw(width)<<tokenlist[Id[i]].tokenstring;
 		if((i+1)%3==0)				//每一行显示三个词 
 			cout<<endl;
 	} 
+	printf("\n--------------------------------------------------\n\n");
 	printf("\n--------------------------------------------------\n");
-	printf("\n关键字：\n"); 
+	printf("关键字：\n"); 
 	for(i=0;i<Key.size();i++)
 	{
 		cout<<std::left<<setw(width)<<tokenlist[Key[i]].tokenstring;
 		if((i+1)%3==0)				//每一行显示三个词
 			cout<<endl; 
 	 } 
+	printf("\n--------------------------------------------------\n\n");
 	printf("\n--------------------------------------------------\n");
-	printf("--------------------------------------------------\n");
-	printf("\n常量：\n"); 
+	printf("常量：\n"); 
 	int k=0;
 	for(i=0;i<Const.size();i++)
 	{
@@ -252,18 +355,18 @@ void Lexer::PrintWords()
 		if((i+1)%3==0)				//每一行显示三个词
 			cout<<endl; 
 	 } 
+	printf("\n--------------------------------------------------\n\n");
 	printf("\n--------------------------------------------------\n");
-	printf("--------------------------------------------------\n");
-	printf("\n操作符：\n"); 
+	printf("操作符：\n"); 
 	for(i=0;i<Operator.size();i++)
 	{
 		cout<<std::left<<setw(width)<<tokenlist[Operator[i]].tokenstring;
 		if((i+1)%3==0)				//每一行显示三个词
 			cout<<endl; 
 	 } 
+	printf("\n--------------------------------------------------\n\n");
 	printf("\n--------------------------------------------------\n");
-	printf("--------------------------------------------------\n");
-	printf("\n注释：\n"); 
+	printf("注释：\n\n"); 
 	for(i=0;i<Comment.size();i++)
 	{
 		cout<<tokenlist[Comment[i]].tokenstring<<endl;
