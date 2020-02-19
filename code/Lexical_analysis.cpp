@@ -116,68 +116,61 @@ void Lexer::analysis(char filename[])
 		 }//状态结束 
 		 else if('0'<=ch&&ch<='9') 	//处理数字常量 
 		 {
-//		 	int flag=0;	//标记符 
+		 	int floatflag=0,longflag=0;	//标记符 
 		 	do{
 		 		str+=ch;	//拼接数字常量
 				ch=fgetc(fp);//读取下一个字符 
-				if(ch=='.')		//遇到小数点，可能是浮点数
-				{
-					do{ 
-						str+=ch;	//拼接数字常量
-						ch=fgetc(fp);	//继续读下一个字符 
-					 }while('0'<=ch&&ch<='9'); //遇到不是数字就是其他字符 自动退出
-					 if(ch=='f'||ch=='F')	//后缀为f或者F,说明是float型常量
-					 {
-					 	str+=ch;	//将后缀加入拼接成完整常量 
-					 	t.linenum=linecount;	//保存该flaot常量的行号
-						t.times=0;			//保存该常量出现的次数为0，常量不需要记录出现次数 
-						t.tokenstring=str;		//保存该常量完整的字符串形式
-						t.tokentype=FLOAT_CONST;//保存float常量的识别码
-						tokenlist.push_back(t);	//加入tokenlist中去
-						Const.push_back(vectorindex);//将该浮点数的常量索引保存
-						cout<<tokenlist[vectorindex].tokenstring;
-						vectorindex++;		//tokenlist索引自增 
-						str="";			//重置拼接字符串 
-					  } //处理后缀f或者F状态结束 
-//					if(flag==1)		//说明小数点后没有符合的字符，还是不合法的
-//					{ 
-//						printf("ERROR:expect digit after '.'"); //输出错误类型
-//						printf(";located at line No.%d",linecount);//输出错误行号
-//						cout<<"\""<<str<<"\""<<" near";			//输出错误处的字符串 
-//					} 
-//					if(ch!=-1)		//如果没有读到文件末尾
-//						fseek(fp,-1,SEEK_CUR);	//多读的字符需要回退 
-				}//处理读到小数点状态结束 
-				if(ch=='l'||ch=='L')	//处理long型后缀的情况
-				{
-					str+=ch;		//将后缀加入拼接成完整常量表达形式
-					t.linenum=linecount;//保存该常量的行号
-					t.times=0;//保存该常量出现的次数为0，常量不需要记录出现次数 
-					t.tokenstring=str;//保存该常量完整的字符串形式
-					t.tokentype=LONG;//保存该常量long型常量的识别码 
-					tokenlist.push_back(t);//加入到tokenlist中去
-					Const.push_back(vectorindex);//将该整型常量的索引保存 
-					cout<<tokenlist[vectorindex].tokenstring;
+			}while('0'<=ch&&ch<='9');	//不是数字字符就不再读取字符
+			if(ch=='.')		//遇到小数点，可能是浮点数
+			{ 
+				do{ 
+				str+=ch;	//拼接数字常量
+				ch=fgetc(fp);	//继续读下一个字符 
+				 }while('0'<=ch&&ch<='9'); //遇到不是数字就是其他字符 自动退出
+				 if(ch=='f'||ch=='F')	//后缀为f或者F,说明是float型常量
+				 {
+				 	str+=ch;	//将后缀加入拼接成完整常量 
+				 	t.linenum=linecount;	//保存该flaot常量的行号
+					t.times=0;			//保存该常量出现的次数为0，常量不需要记录出现次数 
+					t.tokenstring=str;		//保存该常量完整的字符串形式
+					t.tokentype=FLOAT_CONST;//保存float常量的识别码
+					tokenlist.push_back(t);	//加入tokenlist中去
+					Const.push_back(vectorindex);//将该浮点数的常量索引保存
 					vectorindex++;		//tokenlist索引自增 
 					str="";			//重置拼接字符串 
-				 } //处理long型状态结束 
-			 }while('0'<=ch&&ch<='9');	//不是数字字符就不再读取字符 
-			 //处理普通的int型
-			if(ch!=-1)			//如果未读到文件尾
-			 	fseek(fp,-1,SEEK_CUR);		//多读的字符需要回退
-			t.linenum=linecount;
-			t.times=0;	//保存该常量出现的次数为0，常量不需要记录出现次数 
-			t.tokenstring=str;//保存该常量完整的字符串形式
-			t.tokentype=INT;//保存该常量long型常量的识别码 
-			tokenlist.push_back(t);//加入到tokenlist中去
-			Const.push_back(vectorindex);//将该整型常量的索引保存
-			vectorindex++;		//tokenlist索引自增  
-			str="";			//重置拼接字符串 
-		 }//处理数字型常量状态结束 
+					floatflag=1;	//标记对float型进行了处理 
+				  } //处理后缀f或者F状态结束 
+				}//处理读到小数点状态结束   
+			if(ch=='l'||ch=='L')	//处理long型后缀的情况
+			{
+				str+=ch;		//将后缀加入拼接成完整常量表达形式
+				t.linenum=linecount;//保存该常量的行号
+				t.times=0;//保存该常量出现的次数为0，常量不需要记录出现次数 
+				t.tokenstring=str;//保存该常量完整的字符串形式
+				t.tokentype=LONG;//保存该常量long型常量的识别码 
+				tokenlist.push_back(t);//加入到tokenlist中去
+				Const.push_back(vectorindex);//将该整型常量的索引保存 
+				vectorindex++;		//tokenlist索引自增 
+				str="";			//重置拼接字符串
+				longflag=1;		//标记对long型进行了处理 
+			 } //处理long型状态结束 
+			else if(floatflag+longflag<1)	//当未被float和long捕获时，处理int型
+			{
+				if(ch!=-1)			//如果未读到文件尾
+				 	fseek(fp,-1,SEEK_CUR);		//多读的字符需要回退
+				t.linenum=linecount;
+				t.times=0;	//保存该常量出现的次数为0，常量不需要记录出现次数 
+				t.tokenstring=str;//保存该常量完整的字符串形式
+				t.tokentype=INT;//保存该常量long型常量的识别码 
+				tokenlist.push_back(t);//加入到tokenlist中去
+				Const.push_back(vectorindex);//将该整型常量的索引保存
+				vectorindex++;		//tokenlist索引自增  
+				str="";			//重置拼接字符串 
+		 	}//处理数字型常量状态结束  
+		}//处理数字常量状态结束		//while('0'<=ch&&ch<='9');	//不是数字字符就不再读取字符 
 	//	switch(ch){		//处理其他字符情况 
 			
-	//	}
-	}//end of while(ch!=EOF)
+	}	//end of while(ch!=EOF)
 	fclose(fp); 
 }
 int judge_ch_id(char ch)
@@ -255,19 +248,9 @@ void Lexer::PrintWords()
 	int k=0;
 	for(i=0;i<Const.size();i++)
 	{
-		printf("%s",tokenlist[Const[i]].tokenstring.c_str());
-
-		if(k==i)
-		{
-			printf("\n");
-			k++;
-		}
-//		cout<<tokenlist[Const[i]].tokenstring;
-//		if(i<3)
-//			printf("\n");
-////		cout<<"xxx"; 
-////		if((i+1)%3==0)				//每一行显示三个词
-////			cout<<endl; 
+		cout<<std::left<<setw(width)<<tokenlist[Const[i]].tokenstring;
+		if((i+1)%3==0)				//每一行显示三个词
+			cout<<endl; 
 	 } 
 	printf("\n--------------------------------------------------\n");
 	printf("--------------------------------------------------\n");
