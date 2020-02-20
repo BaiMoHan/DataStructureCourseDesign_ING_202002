@@ -265,7 +265,8 @@ void Lexer::analysis(char filename[])
 		
 		//处理操作符 
 		switch(ch){	//处理其他字符情况 
-			case '+':{
+		
+			case '+':{		//处理+ += ++ 
 				str+=ch;	//进行拼接 
 				ch=fgetc(fp);	//读取下一个字符 
 				if(ch=='+')//后面紧跟着第二个加号
@@ -279,20 +280,20 @@ void Lexer::analysis(char filename[])
 					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增 
 					str="";		//重置拼接串 
-				 } 
+				 } //处理++状态结束 
 				else if(ch=='=')//后面紧跟着=
 				{
-					str+=ch;	//第二个+加入拼接
+					str+=ch;	//第二个=加入拼接
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
 					t.tokentype=ADD_EQ;//+=的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
-					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					Operator.push_back(vectorindex);//记录+=在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增
 					str="";			//重置拼接串 
-				 } 
-				else	//不是紧跟着+或= 
+				 } //处理+=状态结束 
+				else	//后面不是紧跟着+或= 
 				{
 					if(ch!=-1)	//如果没有读到文件末尾 
 						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
@@ -301,17 +302,155 @@ void Lexer::analysis(char filename[])
 					t.tokenstring=str;//更新拼接的完整串
 					t.tokentype=ADD;//+的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录+在tokenlist中的索引
+					vectorindex++; 	//索引自增 
+					str="";			//重置拼接串 
+				 } //处理+状态结束 
+				break;
+			}	//处理 + ++ += 状态结束 
+			
+			case '-':{		//处理- -= -- 
+				str+=ch;	//进行拼接 
+				ch=fgetc(fp);	//读取下一个字符 
+				if(ch=='-')//后面紧跟着第二个加号
+				{
+					str+=ch;	//第二个-加入拼接
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=REDUCESELF;//自增的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录--在tokenlist中的索引
+					vectorindex++; //tokenlist索引自增 
+					str="";		//重置拼接串 
+				 } 	//处理--状态结束 
+				else if(ch=='=')//后面紧跟着=
+				{
+					str+=ch;	//第二个=加入拼接
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=REDUCE_EQ;//+=的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录-=在tokenlist中的索引
+					vectorindex++; //tokenlist索引自增
+					str="";			//重置拼接串 
+				 } 	//处理-=状态结束 
+				else	//不是紧跟着-或= 
+				{
+					if(ch!=-1)	//如果没有读到文件末尾 
+						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=REDUCE;//-的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录-在tokenlist中的索引
+					vectorindex++; 	//索引自增 
+					str="";			//重置拼接串 
+				 } //处理 - 状态结束 
+				break;
+			}	//处理 - -= -- 状态结束 
+			
+			case '*':{	//处理* *= 情况 
+				str+=ch;	//进行拼接 
+				ch=fgetc(fp);	//读取下一个字符 
+				 if(ch=='=')//后面紧跟着=
+				{
+					str+=ch;	//第二个=加入拼接
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=MUTIPLY_EQ;//*=的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					vectorindex++; //tokenlist索引自增
+					str="";			//重置拼接串 
+				 } //处理*=状态结束 
+				else	//不是紧跟着= 
+				{
+					if(ch!=-1)	//如果没有读到文件末尾 
+						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=MUTIPLY; //*的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
 					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
 					vectorindex++; 	//索引自增 
 					str="";			//重置拼接串 
-				 } 
+				 } //处理*状态结束 
 				break;
-			}
+			}	//处理* *= 状态结束 
+			
+			case '/':{	//处理* /= 情况 以及 /* // 注释问题 
+				str+=ch;	//进行拼接 
+				ch=fgetc(fp);	//读取下一个字符 
+				
+				 if(ch=='=')//后面紧跟着=
+				{
+					str+=ch;	//第二个=加入拼接
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=DIVIDE_EQ;//*=的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					vectorindex++; //tokenlist索引自增
+					str="";			//重置拼接串 
+				 } //处理/=状态结束 
+				 
+				else if(ch=='*')	//处理/*注释问题 
+				{
+					do{
+						
+					}while(ch=='*');
+				 } //处理/*状态结束 
+				
+				
+				else if(ch=='/')	//处理//注释问题
+				{
+					do{
+						str+=ch;	//拼接注释
+						ch=fgetc(fp);//继续读注释字符 
+					}while((ch!='\n')&&(ch!=-1));	//遇到换行或者文件尾部就说明注释结束 
+					t.linenum=linecount;	//注意此时未更新行号
+					t.times=0;				//注释不需要记录次数
+					t.tokenstring=str;		//存入注释的原始值
+					t.tokentype=COMMENT;	//注释的识别码
+					tokenlist.push_back(t);	//加入tokenlist中去
+					Comment.push_back(vectorindex);//记录注释在tokenlist中的索引
+					vectorindex++;			//tokenlist中的索引自增 
+					linecount++;			//改行注释结束，行数自增 
+					str="";					//重置拼接串 
+				 } //处理//注释状态结束 
+				
+				 
+				else	//不是紧跟着= 
+				{
+					if(ch!=-1)	//如果没有读到文件末尾 
+						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=DIVIDE; //*的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					vectorindex++; 	//索引自增 
+					str="";			//重置拼接串 
+				 } //处理*状态结束 
+				break;
+			}	//处理* *= 状态结束 
 		
-		}		 
+		} //end of switch	
+			 
 	}	//end of while(ch!=EOF)
-	fclose(fp); 
-}
+	
+	fclose(fp); 	//操作完后关闭文件 
+	
+}	//end of analysis 
+
+
 int judge_ch_id(char ch)
 {	//标识符后面的字母可能是数字 大小写字母 
 	return (ch=='_'||(ch>='a'&&ch<='z')||(ch>='A'&&ch<='Z')||'1'<=ch&&ch<='9')&&EOF;
@@ -402,7 +541,7 @@ void Lexer::PrintWords()
 	 } 
 	printf("\n--------------------------------------------------\n\n");
 	printf("\n--------------------------------------------------\n");
-	printf("注释：\n\n"); 
+	printf("注释：\n"); 
 	for(i=0;i<Comment.size();i++)
 	{
 		cout<<tokenlist[Comment[i]].tokenstring<<endl;
