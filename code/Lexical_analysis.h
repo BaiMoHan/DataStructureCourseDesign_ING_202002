@@ -41,6 +41,7 @@ class Lexer	//词法分析类
 		vector<int> Const;		//放常量的索引
 		vector<int> Operator;	//放操作符的索引 
 		vector<int> Comment;	//放注释的索引 
+		vector<int> Delimiter;	//放定界符的索引 
 };
 
 #endif

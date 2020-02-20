@@ -6,6 +6,8 @@
 #include <iomanip>	//C++的格式控制
 #define width 15 
 int judge_ch_id(char ch);//判断是否是构成标识符的函数 
+
+
 Lexer::Lexer()
 {//Lexer类构造函数 
 	linecount=0;	//初始化行号 
@@ -24,28 +26,35 @@ Lexer::Lexer()
 		 PrintWords();	//打印词法分析的结果 
 
  } 
+ 
+ 
 void Lexer::Disp()
 {
 	printf("请输入需要打开的文件名(不超过30个字符),filename=");
 	scanf("%s",filename);
 	printf("%s",filename);
 }
+
+
 void Lexer::analysis(char filename[])
-{//词法分析成员函数 
+{	//词法分析成员函数 
 	printf("需要分析的源程序文件为%s",filename);
 	printf("\n开始进行词法分析：\n");
 	FILE* fp;			//声明一个文件指针 
 	fp=fopen(filename,"r");//以只读的方式打开源程序文件 
+	
 	if(fp==NULL)		//判断文件是否打开失败 
 	{
 		printf("文件打开失败,请重新打开程序");//文件打开失败提示信息 
 		getchar();getchar();				//等待用户输入字符,留出信息显示时间 
 		exit(-1) ; 				//关闭程序 
 	}
+	
 	int i=0;					//循环计数器变量 
 	char ch;					//定义一个字符中间变量 
 	string str="",tempstr;				//定义识别字符序列存放变量 
 	token t;	//定义中间变量t,为了存放至tokenlist中
+	
 	while((ch=fgetc(fp))!=EOF)	//当未读到文件末尾时，进行状态自动机识别 			fseek(fp,-1,SEEK_CUR);
 	{
 		if(ch=='\n')		//处理回车
@@ -53,8 +62,10 @@ void Lexer::analysis(char filename[])
 			linecount++;	//行数自增
 			continue;		//进行下一次循环 
 		 } //状态结束 
+		 
 		else if(ch==' ')	//处理空格
 			continue;		//进入下一次循环 
+			
 		else if(ch=='_')	//处理开头是下划线,只可能是标识符
 		{
 			do{
@@ -70,7 +81,8 @@ void Lexer::analysis(char filename[])
 			tokenlist.push_back(t);//将该标识符放进tokenlist中去 
 			vectorindex++;		//tokenlist索引自增 
 			str="";				//重置拼接字符串 
-		} //状态结束 
+		} //下划线开头状态结束 
+		
 		else if(('a'<=ch&&ch<='z')||('A'<=ch&&ch<='Z'))	//处理开头是字母的情况,可能是标识符,也可能是关键字 
 		{
 			int kflag=0;	//标记是否带有下划线或者数字 
@@ -107,7 +119,8 @@ void Lexer::analysis(char filename[])
 				vectorindex++;		//tokenlist索引自增 
 				str="";				//重置拼接字符串 
 			  } 
-		 }//状态结束 
+		 }//字母开头状态结束 
+		 
 		 else if('0'<=ch&&ch<='9') 	//处理数字常量 
 		 {
 		 	int floatflag=0,longflag=0;	//标记符 
@@ -160,7 +173,7 @@ void Lexer::analysis(char filename[])
 				Const.push_back(vectorindex);//将该整型常量的索引保存
 				vectorindex++;		//tokenlist索引自增  
 				str="";			//重置拼接字符串 
-		 	}//处理数字型常量状态结束  
+		 	}//处理int型常量状态结束  
 		}//处理数字常量状态结束		//while('0'<=ch&&ch<='9');	//不是数字字符就不再读取字符 
 		
 		else if(ch=='#')	//考虑时#include<XXXX>声明 
@@ -263,7 +276,7 @@ void Lexer::analysis(char filename[])
 //			fseek(fp,-i-1,SEEK_CUR);	//将文件指针前移(i+1)个单位,即返回多读的字符 
 		 }//处理#状态结束 
 		
-		//处理操作符 
+		//处理其他操作符和定界符 
 		switch(ch){	//处理其他字符情况 
 		
 			case '+':{		//处理+ += ++ 
@@ -441,6 +454,74 @@ void Lexer::analysis(char filename[])
 				 } //处理*状态结束 
 				break;
 			}	//处理* *= 状态结束 
+			
+			case ',':{		//处理,分隔符
+				str+=ch;				//拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=0;				//分隔符不需要记录次数 
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=COMMA;		//英文半角逗号的识别码
+				tokenlist.push_back(t);	//加入到tokenlist中去
+				Delimiter.push_back(vectorindex);//记录在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";					//重置拼接串
+				ch=fgetc(fp); 			//继续读下一个字符 
+				if(ch!=',')
+					fseek(fp,-1,SEEK_CUR);
+				break;
+			}//处理,分隔符状态结束
+			
+			case ';':{	//处理;分隔符 
+				str+=ch;				//拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=0;				//分隔符不需要记录次数 
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=SEMI;		//英文半角分号的识别码
+				tokenlist.push_back(t);	//加入到tokenlist中去
+				Delimiter.push_back(vectorindex);//记录在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";					//重置拼接串
+				ch=fgetc(fp);			//继续读下一个字符
+				if(ch!=';')		
+					fseek(fp,-1,SEEK_CUR); 
+				break;
+			} //处理;分隔符状态结束 
+			
+			case '%':{		//处理%状态 
+				str+=ch;				//拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=0;				//操作符符不需要记录次数 
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=MOD;		//%识别码
+				tokenlist.push_back(t);	//加入到tokenlist中去
+				Operator.push_back(vectorindex);//记录在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";					//重置拼接串
+				break;
+			} //处理%状态结束 
+			
+			case '&':{		//处理&&运算符,本次任务要求不考虑&位运算符情况
+				str+=ch;				//拼接 
+				ch=fgetc(fp);			//继续读下一个字符
+				if(ch=='&')				//如果能构成&&
+				{
+					str+=ch;			//完整拼接 
+					t.linenum=linecount;	//更新行号
+					t.times=0;				//分隔符不需要记录次数 
+					t.tokenstring=str;		//更新拼接串
+					t.tokentype=AND;		//英文半角分号的识别码
+					tokenlist.push_back(t);	//加入到tokenlist中去
+					Operator.push_back(vectorindex);//记录在tokenlist中的索引
+					vectorindex++;			//tokenlist索引自增
+					str="";					//重置拼接串 
+				 } 
+				else		//不能构成&&,则是错误 
+				{
+					fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					printf("ERROR:Undefined label &;Located on line No. %d",linecount);
+				 } 
+				break;
+			}	//处理&&状态结束 
 		
 		} //end of switch	
 			 
@@ -536,6 +617,14 @@ void Lexer::PrintWords()
 	for(i=0;i<Operator.size();i++)
 	{
 		cout<<std::left<<setw(width)<<tokenlist[Operator[i]].tokenstring;
+		if((i+1)%3==0)				//每一行显示三个词
+			cout<<endl; 
+	 } 
+	printf("\n--------------------------------------------------\n");
+	printf("定界符(分隔符)：\n"); 
+	for(i=0;i<Delimiter.size();i++)
+	{
+		cout<<std::left<<setw(width)<<tokenlist[Delimiter[i]].tokenstring;
 		if((i+1)%3==0)				//每一行显示三个词
 			cout<<endl; 
 	 } 
