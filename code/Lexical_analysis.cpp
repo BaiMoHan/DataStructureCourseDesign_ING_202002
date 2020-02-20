@@ -11,19 +11,13 @@ Lexer::Lexer()
 	linecount=0;	//初始化行号 
 	vectorindex=0;	//初始化tokenlist索引 
 	state=0;		//自动机初始状态 
-//	IDIndex=0;		//标识符数组索引初始化
-//	KeyIndex=0;		//关键字数组索引初始化 
-//	ConstIndex=0;	//常量数组索引初始化 
-//	OperatorIndex=0;//操作数数组索引初始化 
-//	CommentIndex=0; //注释数组索引初始化 
 	DFAflag=1;		//初始化DFA分析标记为成功标记1
+	
 	//提示用户输入文件名 
 	printf("请输入要分析的源程序文件名(不超过30个字符),filename=");
 	//读取用户输入的文件名 
 	scanf("%s",filename);
-	//输入调用词法识别器前的提示信息 
-	printf("需要分析的源程序文件为%s",filename);
-	printf("\n开始进行词法分析：\n");
+
 	//调用词法识别器 
 	analysis(filename);
 	if(DFAflag)			//如果词法分析成功
@@ -300,7 +294,8 @@ void Lexer::analysis(char filename[])
 				 } 
 				else	//不是紧跟着+或= 
 				{
-					fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					if(ch!=-1)	//如果没有读到文件末尾 
+						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
