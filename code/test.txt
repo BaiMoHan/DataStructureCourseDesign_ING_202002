@@ -1,5 +1,7 @@
 #include<stdio.h>
 int a,n;
+int fun(int a, int c);
+int main()
 const, b
 double c
 ++,%

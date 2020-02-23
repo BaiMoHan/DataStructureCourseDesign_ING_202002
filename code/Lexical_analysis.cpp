@@ -10,7 +10,7 @@ int judge_ch_id(char ch);//判断是否是构成标识符的函数
 
 Lexer::Lexer()
 {//Lexer类构造函数 
-	linecount=0;	//初始化行号 
+	linecount=1;	//初始化行号 
 	vectorindex=0;	//初始化tokenlist索引 
 	state=0;		//自动机初始状态 
 	DFAflag=1;		//初始化DFA分析标记为成功标记1
@@ -24,6 +24,8 @@ Lexer::Lexer()
 	analysis(filename);
 	if(DFAflag)			//如果词法分析成功
 		 PrintWords();	//打印词法分析的结果 
+	else
+		printf("\nDFA出现错误！"); 
 
  } 
  
@@ -216,6 +218,7 @@ void Lexer::analysis(char filename[])
 					 } 
 					if(ch=='\n')	//如果是换行退出的，说明引用库格式错误
 					{
+						DFAflag=0;	//出现词法错误 
 						printf("ERROR:Bad file name format in include directive;Located on line NO.%d\n",linecount);
 						str="";		//重置拼接 
 						fseek(fp,-1,SEEK_CUR);	//将回车符回退 
@@ -245,7 +248,8 @@ void Lexer::analysis(char filename[])
 					 } 
 					if(ch=='\n')	//如果是换行退出的，说明引用库格式错误
 					{
-						printf("ERROR:Bad file name format in include directive;Located on line NO.%d",linecount);
+						DFAflag=0;	//出现词法错误 
+						printf("ERROR:Bad file name format in include directive;Located on line NO.%d\n",linecount);
 						str="";		//重置拼接 
 						fseek(fp,-1,SEEK_CUR);	//将回车符回退 
 					 } 
@@ -263,12 +267,14 @@ void Lexer::analysis(char filename[])
 				}//对“”的库名匹配状态结束 
 				else	//库引用格式不对错误
 				{
-					printf("ERROR:Bad file name format in include directive;Located on line NO.%d",linecount);
+					DFAflag=0;	//出现词法错误 
+					printf("ERROR:Bad file name format in include directive;Located on line NO.%d\n",linecount);
 				 } 
 			}
 			else 				//两字符串不等，说明#是非法的标识符
 			{	//输出非法字符提示错误 
-				printf("ERROR:Illegal character '#';Located on line No.%d",linecount); 
+				DFAflag=0;	//出现词法错误 
+				printf("ERROR:Illegal character '#';Located on line No.%d\n",linecount); 
 				str="";			//重置拼接串 
 				rewind(fp);		//将文件指针移到开头
 				ch=fgetc(fp);	//开头#已经处理，直接读下一个字符 
@@ -415,9 +421,42 @@ void Lexer::analysis(char filename[])
 				 
 				else if(ch=='*')	//处理/*注释问题 
 				{
+					t.linenum=linecount;//保存注释的起始行 
 					do{
-						
-					}while(ch=='*');
+						str+=ch;	//拼接注释字符串
+						ch=fgetc(fp);//读取下一个字符
+						if(ch=='\n')//统计换行
+							linecount++;	//行数自增 
+						if(ch=='/')		//如果是*/形式就是注释收尾，此时检查前一位字符是不是*即可
+						{
+							fseek(fp,-2,SEEK_CUR);	//文件指针回退两位
+							if(fgetc(fp)=='*')		//构成*/注释结尾
+							{
+								str+=ch;		//把末尾的/加入拼接 
+								break;				//退出注释的循环 
+							 } 
+							else				//未构成*/注释结尾 
+							{
+								fgetc(fp);		//将文件指针归原 
+							 } 
+						 } 
+					}while(ch!=-1);
+					if(ch==EOF)	//到末尾退出的，说明注释没有截至
+					{
+						printf("ERROR:Coments missing ending;Located on Line No.%d\n",linecount);
+						DFAflag=0;	//出现词法错误 
+						str="";		//重置拼接串 
+					 } 
+					else	//说明是break退出，注释没有问题
+					{
+						fgetc(fp);	//文件指针后移一位，因为之前往前移动了两位 
+						t.times=0;	//不存在记录注释出现的次数 
+						t.tokenstring=str;//保存拼接串
+						tokenlist.push_back(t);//存入tokenlist中去
+						Comment.push_back(vectorindex);//保存注释在tokenlist中的索引
+						vectorindex++;		//tokenlist索引自增
+						str="";			//重置拼接串 
+					 } 
 				 } //处理/*状态结束 
 				
 				
@@ -517,6 +556,7 @@ void Lexer::analysis(char filename[])
 				 } 
 				else		//不能构成&&,则是错误 
 				{
+					DFAflag=0;	//出现词法错误 
 					fseek(fp,-1,SEEK_CUR);	//回退多读的字符
 					printf("ERROR:Undefined label &;Located on line No. %d",linecount);
 				 } 
@@ -578,6 +618,8 @@ TokenType Lexer::gettokentype(string str)
 		return INCLUDE; 
 	else if(str=="const")//const
 		return CONST;
+	else if(str=="main")//main
+		return MAIN; 
 	else					// 
 		return ID;
 }
