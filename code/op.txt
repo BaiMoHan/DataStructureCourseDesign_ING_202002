@@ -8,11 +8,11 @@ int func();                 //7
 int main()                  //8
 {                                 //9
     int k99h=99;              //10
-    float op998_=.85;  //11
+    float op998_=1.85;  //11
     double wena=6.8f;  //12
-    long __jsawunni=199l; //13
+    long __jsawunni=199L; //13
     char _op='o';        //14
-    char jj__44[max]="hello world";//15
+    char jj__44[max]="hello world;//15
     while(k99h)            //16
     {                          //17
         op988+=wena;   //18

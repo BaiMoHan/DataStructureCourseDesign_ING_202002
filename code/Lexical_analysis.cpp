@@ -22,10 +22,10 @@ Lexer::Lexer()
 
 	//调用词法识别器 
 	analysis(filename);
-	if(DFAflag)			//如果词法分析成功
+//	if(DFAflag)			//如果词法分析成功
 		 PrintWords();	//打印词法分析的结果 
-	else
-		printf("\nDFA出现错误！"); 
+//	else
+//		printf("\nDFA出现错误！"); 
 
  } 
  
@@ -564,6 +564,31 @@ void Lexer::analysis(char filename[])
 				break;
 			}	//处理&&状态结束 
 			
+			case '|':{		//处理&&运算符,本次任务要求不考虑&位运算符情况
+				str+=ch;				//拼接 
+				ch=fgetc(fp);			//继续读下一个字符
+				if(ch=='|')				//如果能构成&&
+				{
+					str+=ch;			//完整拼接 
+					t.linenum=linecount;	//更新行号
+					t.times=0;				//分隔符不需要记录次数 
+					t.tokenstring=str;		//更新拼接串
+					t.tokentype=OR;		//英文半角分号的识别码
+					tokenlist.push_back(t);	//加入到tokenlist中去
+					Operator.push_back(vectorindex);//记录在tokenlist中的索引
+					vectorindex++;			//tokenlist索引自增
+					str="";					//重置拼接串 
+				 } 
+				else		//不能构成&&,则是错误 
+				{
+					DFAflag=0;	//出现词法错误 
+					fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					printf("ERROR:Undefined label |;Located on line No. %d",linecount);
+					str="";		//重置拼接串 
+				 } 
+				break;
+			}	//处理&&状态结束 
+			
 			case  '{':{		//处理左花括号状态 
 				str+=ch;	//加入拼接 
 				t.linenum=linecount;	//更新行号
@@ -648,9 +673,200 @@ void Lexer::analysis(char filename[])
 				break;
 			} 	//处理右圆括号状态结束 
 			
+			case  '[':{		//处理左圆括号状态 
+				str+=ch;	//加入拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=PML;	//左方括号的识别码
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Delimiter.push_back(vectorindex);//记录tokenlist中该分隔符的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";				//重置拼接串 
+				break;
+			} 	//处理左花括号状态结束
+			
+			case ']':{		//处理右圆括号状态 
+				str+=ch;	//加入拼接
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				tempstr='[';		//保存左方括号
+				if(counttimes(tempstr)==1)	//如果之前没有出现左方括号
+				{
+					//多余的],输出错误信息 
+					printf("ERROR:Character ']' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 
+				 } 
+				else if(t.times>counttimes(tempstr))//如果前面所有的{都有匹配
+				{
+					//多余的],输出错误信息
+					printf("ERROR:Character ']' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 	 
+				 } 
+				else	//该]无错误，加入tokenlist中去
+				{
+					t.tokenstring=str;	//更新拼接串
+					t.tokentype=PMR;	//更新]的识别码 
+					tokenlist.push_back(t);//加入tokenlist中去
+					Delimiter.push_back(vectorindex);//记录分隔符在tokenlist中的识别码
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+				 } 
+				break;
+			} 	//处理右方括号状态结束 
+			
+			case '<':{	//处理小于号状态开始 
+				str+=ch;	//加入拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=0;				//操作符不需要记录出现次数
+				t.tokenstring=str;		//更新完整串
+				t.tokentype=LESS;		//小于号的标识码
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Operator.push_back(vectorindex);//保存该操作符在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";					//重置拼接串 
+				break;
+			}		//处理小于号状态结束
+			
+			case '>':{	//处理大于号状态开始 
+				str+=ch;	//加入拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=0;				//操作符不需要记录出现次数
+				t.tokenstring=str;		//更新完整串
+				t.tokentype=GREATER;		//小于号的标识码
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Operator.push_back(vectorindex);//保存该操作符在tokenlist中的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";					//重置拼接串 
+				break;
+			}		//处理大于号状态结束 
+			
+			case  '\'':{	//处理单引号状态,英文里面单引号无左右之分，人为定义左右 
+				str+=ch;		//先拼接成左单引号 
+				t.linenum=linecount;//更新行号
+				t.times=0;			//常量不需要记录出现的次数
+				t.tokenstring=str;	//更新常量的完整串
+				t.tokentype=SQUTOE_L;//左单引号的识别码
+				tokenlist.push_back(t);//加入到tokenlist中去
+				Delimiter.push_back(vectorindex);//保存字符常量在tokenlist中索引
+				vectorindex++;		//tokenlist索引自增	 
+				do{
+					ch=fgetc(fp);	//读取下一个字符 
+					str+=ch;	//加入拼接
+					if(ch=='\'')//匹配后一个引号 
+						break; //两单引号匹配成功就退出 
+				}while(ch!='\n'&&ch!=';');//遇到换行或者分号就退出 
+				if(ch=='\'')	//如果是因为匹配到引号退出
+				{
+					if(str.size()>3)	//如果不是单字符
+					{
+						//输出报错信息 
+						printf("ERROR:%s is not the char-const;Located on line No.%d\n",str.c_str(),linecount);
+						str="";		//重置拼接串 
+					 }
+					else 	//符合字符变量的格式
+					{
+						t.linenum=linecount;//更新行号
+						t.times=0;			//常量不需要记录出现的次数
+						t.tokenstring=str;	//更新常量的完整串
+						t.tokentype=CHAR_CONST;//字符常量的识别码
+						tokenlist.push_back(t);//加入到tokenlist中去
+						Const.push_back(vectorindex);//保存字符常量在tokenlist中索引
+						vectorindex++;		//tokenlist索引自增
+						str="";				//重置拼接串 
+						str='\'';			//单独设置右引号，认为定义有左右之分
+						t.linenum=linecount;//更新行号
+						t.times=0;			//常量不需要记录出现的次数
+						t.tokenstring=str;	//更新常量的完整串
+						t.tokentype=SQUTOE_R;//右单引号的识别码
+						tokenlist.push_back(t);//加入到tokenlist中去
+						Delimiter.push_back(vectorindex);//保存字符常量在tokenlist中索引
+						vectorindex++;		//tokenlist索引自增	
+						str="";			//重置拼接串	 
+					 } 
+				}
+				else		//因为换行或者分号退出的
+				{
+					//输出不成对出现的匹配错误信息 
+					printf("ERROR:Character ' is lack of matching;Located on line No.%d\n",linecount);
+					fseek(fp,-1,SEEK_CUR);//文件指针回移 
+					str="";			//重置拼接串 
+				 } 
+				break;
+			} 	//处理单引号状态结束
+			
+			case  '\"':{	//处理双引号状态,英文里面单引号无左右之分，人为定义左右 
+				str+=ch;		//先拼接成左单引号 
+				t.linenum=linecount;//更新行号
+				t.times=0;			//常量不需要记录出现的次数
+				t.tokenstring=str;	//更新常量的完整串
+				t.tokentype=DQUTOE_L;//左单引号的识别码
+				tokenlist.push_back(t);//加入到tokenlist中去
+				Delimiter.push_back(vectorindex);//保存字符常量在tokenlist中索引
+				vectorindex++;		//tokenlist索引自增	 
+				do{
+					ch=fgetc(fp);	//读取下一个字符 
+					str+=ch;	//加入拼接
+					if(ch=='\"')//匹配后一个引号 
+						break; //两单引号匹配成功就退出 
+				}while(ch!='\n'&&ch!=';');//遇到换行或者分号就退出 
+				if(ch=='\"')	//如果是因为匹配到引号退出
+				{
+					t.linenum=linecount;//更新行号
+					t.times=0;			//常量不需要记录出现的次数
+					t.tokenstring=str;	//更新常量的完整串
+					t.tokentype=CHAR_CONST;//字符常量的识别码
+					tokenlist.push_back(t);//加入到tokenlist中去
+					Const.push_back(vectorindex);//保存字符常量在tokenlist中索引
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+					str='\"';			//单独设置右引号，认为定义有左右之分
+					t.linenum=linecount;//更新行号
+					t.times=0;			//常量不需要记录出现的次数
+					t.tokenstring=str;	//更新常量的完整串
+					t.tokentype=DQUTOE_R;//右单引号的识别码
+					tokenlist.push_back(t);//加入到tokenlist中去
+					Delimiter.push_back(vectorindex);//保存字符常量在tokenlist中索引
+					vectorindex++;		//tokenlist索引自增	
+					str="";			//重置拼接串	 	  
+				}
+				else		//因为换行或者分号退出的
+				{
+					//输出不成对出现的匹配错误信息 
+					printf("ERROR:Character \" is lack of matching;Located on line No.%d\n",linecount);
+					fseek(fp,-1,SEEK_CUR);//文件指针回移 
+					str="";			//重置拼接串 
+				 } 
+				break;
+			} 	//处理双引号状态结束
+			
 			case '=':{	//处理= == 状态
 				str+=ch;	//拼接串
-				
+				if((ch=fgetc(fp))=='=')	//判断是不是==
+				{
+					str+=ch;	//拼接成==
+					t.linenum=linecount;//更新行号 
+					t.times=0;	//不需要记录操作符出现的次数
+					t.tokenstring=str;//更新拼接串
+					t.tokentype=EQ;		//==的识别码
+					tokenlist.push_back(t);//加入到tokenlist中去
+					Operator.push_back(vectorindex);//保存==在tokenlist中的索引
+					vectorindex++;	//tokenlist索引自增
+					str="";			//重置拼接串 
+				 } 
+				else 		//回退多读的字符
+				{
+					if(ch!=EOF)	//如果不是读到文件尾部 
+						fseek(fp,-1,SEEK_CUR);//将文件指针回退一步 
+					t.linenum=linecount;//更新行号
+					t.times=0;	//操作符不需要统计出现次数
+					t.tokenstring=str;	//更新拼接串
+					t.tokentype=ASSIGN;	//更新=的识别码
+					tokenlist.push_back(t);//加入tokenlist中去
+					Operator.push_back(vectorindex);//保存操作符在tokenlist中的索引
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+				 } 
 				
 				break;
 			} 
