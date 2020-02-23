@@ -25,4 +25,5 @@ This is my data structure course design in Huazhong University of Science and Te
 11. Finish identifying , ; %
     - After reading the ',' from the file, the file pointer seems no to move to next char automatically. I did not find the reason, so I have to move the file pointer when necessary.
     - I guess it was my computer system that caused the problem.
-
+12. Finish identifying comments `/*XXXXX*/`
+13. Deal with brackets and set test example

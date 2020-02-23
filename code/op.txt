@@ -1,1 +1,46 @@
-#
+/************************1
+****test program*********2
+******MUST ASCII*****3
+***********************4*/
+#include<sykh.h>        //5
+const int max=30;         //6
+int func();                 //7
+int main()                  //8
+{                                 //9
+    int k99h=99;              //10
+    float op998_=.85;  //11
+    double wena=6.8f;  //12
+    long __jsawunni=199l; //13
+    char _op='o';        //14
+    char jj__44[max]="hello world";//15
+    while(k99h)            //16
+    {                          //17
+        op988+=wena;   //18
+        if(op988>100)   //19
+            break;           //20
+        else if(wena<99) //21
+            continue;     //22
+     }                         //23
+    int i;                     //24
+    for(i=0;i<10;i++)   //25
+    {                          //26
+        wena--;             //27
+        op988-=8;          //28
+        if(op988>50)      //29
+            func();           //30
+        else                  //31
+        {                      //32
+            op988%=7;    //33
+            op988/=2;     //34
+        }                      //35
+    }                          //36
+}                              //37
+int func()                  //38
+{                              //39
+    int oja_9,_jsaoj;    //40
+    oja_9=8;               //41
+    _jsaoj=9;              //42
+    oja_9&&_jsaoj;    //43
+    oja_9||_jsaoj;      //44
+    return 9;              //45
+}                             //46

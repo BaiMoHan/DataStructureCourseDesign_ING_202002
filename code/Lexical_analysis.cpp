@@ -283,7 +283,7 @@ void Lexer::analysis(char filename[])
 		 }//处理#状态结束 
 		
 		//处理其他操作符和定界符 
-		switch(ch){	//处理其他字符情况 
+		else switch(ch){	//处理其他字符情况 
 		
 			case '+':{		//处理+ += ++ 
 				str+=ch;	//进行拼接 
@@ -559,9 +559,107 @@ void Lexer::analysis(char filename[])
 					DFAflag=0;	//出现词法错误 
 					fseek(fp,-1,SEEK_CUR);	//回退多读的字符
 					printf("ERROR:Undefined label &;Located on line No. %d",linecount);
+					str="";		//重置拼接串 
 				 } 
 				break;
 			}	//处理&&状态结束 
+			
+			case  '{':{		//处理左花括号状态 
+				str+=ch;	//加入拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=LP;			//左花括号的识别码
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Delimiter.push_back(vectorindex);//记录tokenlist中该分隔符的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";				//重置拼接串 
+				break;
+			} 	//处理左花括号状态结束
+			
+			case '}':{		//处理右花括号状态 
+				str+=ch;	//加入拼接
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				tempstr='{';		//保存左花括号
+				if(counttimes(tempstr)==1)	//如果之前没有出现左花括号
+				{
+					//多余的},输出错误信息 
+					printf("ERROR:Character '}' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 
+				 } 
+				else if(t.times>counttimes(tempstr))//如果前面所有的{都有匹配
+				{
+					//多余的},输出错误信息
+					printf("ERROR:Character '}' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 	 
+				 } 
+				else	//该}无错误，加入tokenlist中去
+				{
+					t.tokenstring=str;	//更新拼接串
+					t.tokentype=RP;		//更新}的识别码 
+					tokenlist.push_back(t);//加入tokenlist中去
+					Delimiter.push_back(vectorindex);//记录分隔符在tokenlist中的识别码
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+				 } 
+				break;
+			} 	//处理右花括号状态结束 
+			
+			case  '(':{		//处理左圆括号状态 
+				str+=ch;	//加入拼接 
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				t.tokenstring=str;		//更新拼接串
+				t.tokentype=BRACKETL;	//左圆括号的识别码
+				tokenlist.push_back(t);	//加入tokenlist中去
+				Delimiter.push_back(vectorindex);//记录tokenlist中该分隔符的索引
+				vectorindex++;			//tokenlist索引自增
+				str="";				//重置拼接串 
+				break;
+			} 	//处理左花括号状态结束
+			
+			case ')':{		//处理右圆括号状态 
+				str+=ch;	//加入拼接
+				t.linenum=linecount;	//更新行号
+				t.times=counttimes(str);//更新次数
+				tempstr='(';		//保存左圆括号
+				if(counttimes(tempstr)==1)	//如果之前没有出现左花括号
+				{
+					//多余的),输出错误信息 
+					printf("ERROR:Character ')' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 
+				 } 
+				else if(t.times>counttimes(tempstr))//如果前面所有的{都有匹配
+				{
+					//多余的),输出错误信息
+					printf("ERROR:Character ')' is a lack of matching;Located on line No.%d\n",linecount);
+					str="";	//重置拼接串 	 
+				 } 
+				else	//该)无错误，加入tokenlist中去
+				{
+					t.tokenstring=str;	//更新拼接串
+					t.tokentype=BRACKETR;	//更新)的识别码 
+					tokenlist.push_back(t);//加入tokenlist中去
+					Delimiter.push_back(vectorindex);//记录分隔符在tokenlist中的识别码
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+				 } 
+				break;
+			} 	//处理右圆括号状态结束 
+			
+			case '=':{	//处理= == 状态
+				str+=ch;	//拼接串
+				
+				
+				break;
+			} 
+			
+			default :{		//其他非法字符 
+				printf("ERROR:Illegal character '%c';Located on line No.%d\n",ch,linecount); 
+				DFAflag=0;		//词法分析出现错误 
+				break;
+			}
 		
 		} //end of switch	
 			 

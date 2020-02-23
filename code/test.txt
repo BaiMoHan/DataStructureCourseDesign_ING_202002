@@ -1,7 +1,38 @@
+/*test program 
+MUST ASCII
+***************/
 #include<stdio.h>
-int a,n;
+const max=30;
 int fun(int a, int c);
-int main()
+int main(){
+int i=0;
+float a6523p=.6;
+double b774__uuk=3f;
+char _zmoj='k';
+char str[max]="hello world";
+long k=99l;
+int main
+{
+while(k)
+{
+a6523p+=1;
+k-=1;
+}
+for(i;i<n;i++)
+{
+if(i<n)
+{
+n--;
+i=i%3;
+n+=i/n;
+if(i+5<n)
+continue;
+else
+break;
+}
+}
+return k>n;
+}
 const, b
 double c
 ++,%
