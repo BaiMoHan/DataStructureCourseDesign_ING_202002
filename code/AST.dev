@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=1
 CompilerSettings=0000000000000000001000000
-UnitCount=5
+UnitCount=3
 
 [VersionInfo]
 Major=1
@@ -49,16 +49,6 @@ ProductName=
 ProductVersion=
 AutoIncBuildNr=0
 SyncProduct=1
-
-[Unit3]
-FileName=Parser.h
-CompileCpp=1
-Folder=
-Compile=1
-Link=1
-Priority=1000
-OverrideBuildCmd=0
-BuildCmd=
 
 [Unit4]
 FileName=Parser.cpp
@@ -91,6 +81,16 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit5]
+FileName=main.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit3]
 FileName=main.cpp
 CompileCpp=1
 Folder=

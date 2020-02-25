@@ -3,6 +3,8 @@
 #include<vector>	//借助vector实现tokenlist 
 #include<string>	//借助String类 
 #define MAXINDEX 100	//数组最大容量 
+//class Parser;
+
 using namespace std;
 typedef enum{		//定义词法需要的识别码 
 	ERROR_TOKEN=1,LP,RP,PML,PMR,SEMI,COMMA,INT_CONST,FLOAT_CONST,DOUBLE_CONST,
@@ -22,6 +24,7 @@ class Lexer	//词法分析类
 {
 	public:
 		Lexer();		//构造函数 
+		friend class Parser;	//友元类 
 		void analysis(char filename[]);
 		void Disp();
 		void PrintWords();//词法分析成功后输出识别出来的词 
@@ -41,6 +44,7 @@ class Lexer	//词法分析类
 		vector<int> Operator;	//放操作符的索引 
 		vector<int> Comment;	//放注释的索引 
 		vector<int> Delimiter;	//放定界符的索引 
+
 };
 
 #endif
