@@ -12,7 +12,7 @@ int main()                  //8
     double wena=6.8f;  //12
     long __jsawunni=199L; //13
     char _op='o';        //14
-    char jj__44[max]="hello world;//15
+    char jj__44[max]="hello world";//15
     while(k99h)            //16
     {                          //17
         op988+=wena;   //18

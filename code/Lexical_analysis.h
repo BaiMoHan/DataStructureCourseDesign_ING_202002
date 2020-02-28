@@ -3,16 +3,25 @@
 #include<vector>	//借助vector实现tokenlist 
 #include<string>	//借助String类 
 #define MAXINDEX 100	//数组最大容量 
-//class Parser;
+
 
 using namespace std;
-typedef enum{		//定义词法需要的识别码 
-	ERROR_TOKEN=1,LP,RP,PML,PMR,SEMI,COMMA,INT_CONST,FLOAT_CONST,DOUBLE_CONST,
-	LONG_CONST,CHAR_CONST,VOID,RETURN,IF,ELSE,WHILE,FOR,BREAK,CONTINUE,ADD,REDUCE,
-	MUTIPLY,DIVIDE,ADDSELF,REDUCESELF,ASSIGN,EQ,ADD_EQ,REDUCE_EQ,MUTIPLY_EQ,DIVIDE_EQ,NUM,STRING_CONST,
-	SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,INT,DOUBLE,CHAR,LONG,LESS,GREATER,MOD,NOTEQ,
-	BRACKETL,BRACKETR,AND,OR,INCLUDE,OTHERS,ENDFILE,COMMENT,ID,FLOAT,CONST,MAIN
-}TokenType; 	//定义各类单词的类别码 
+//typedef enum{		//定义词法需要的识别码 
+//	ERROR_TOKEN=1,LP,RP,PML,PMR,SEMI,COMMA,INT_CONST,FLOAT_CONST,DOUBLE_CONST,
+//	LONG_CONST,CHAR_CONST,VOID,RETURN,IF,ELSE,WHILE,FOR,BREAK,CONTINUE,ADD,REDUCE,
+//	MUTIPLY,DIVIDE,ADDSELF,REDUCESELF,ASSIGN,EQ,ADD_EQ,REDUCE_EQ,MUTIPLY_EQ,DIVIDE_EQ,NUM,STRING_CONST,
+//	SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,INT,DOUBLE,CHAR,LONG,LESS,GREATER,MOD,NOTEQ,
+//	BRACKETL,BRACKETR,AND,OR,INCLUDE,OTHERS,ENDFILE,COMMENT,ID,FLOAT,CONST,MAIN
+//}TokenType; 	//定义各类单词的类别码 
+
+typedef enum{		//定义词法需要的识别码
+	 INT=1,CHAR,FLOAT,DOUBLE,LONG,VOID,INTCONST,CHARCONST,LONGCONST,FLOATCONST,DOUBLECONST,STRINGCONST,
+	 CONST,INCLUDE,IF,ELSE,WHILE,FOR,BREAK,RETURN,CONTINUE,MAIN,SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,ADD,ADDEQ,
+	 ADDSELF,REDUCE,REDUCEEQ,REDUCESELF,MUTIPLY,MUTIPLYEQ,DIVIDE,DIVIDEEQ,MOD,MODEQ,EQ,NOTEQ,LESS,GREATER,AND,
+	 OR,ASSIGN,COMMENT,BRACKETL,BRACKETR,PML,PMR,LP,RP,COMMA,SEMI,ENDFILE,ID
+	
+}TokenType; 
+
 typedef struct token{
 	TokenType tokentype;	//词的识别码
 	string tokenstring;		//词本身的值
@@ -20,15 +29,34 @@ typedef struct token{
 	int linenum;			//所在的行号 
 }token;
 
+typedef enum{	//定义语法树的结点类别
+	//根节点,外部定义序列,外部变量定义,函数定义, 数据类型 
+	rt=1,exdeflist,exvardef,funcdef,datatype,
+}nodekind;
+
+	
+typedef struct syntaxnode{	//孩子兄弟表示法 
+	syntaxnode *child;	//默认左子树是孩子 
+	syntaxnode *sibling;//右子树是兄弟 
+	nodekind kind;		//树结点的类型
+	int listindex;			//在tokenlist中的索引 
+}* syntaxtree,syntaxnode; 
+
 class Lexer	//词法分析类 
 {
 	public:
+		token tokentext;	//临时取词中间变量
+		int index; 			//在tokenlist中的取词索引 
 		Lexer();		//构造函数 
-		friend class Parser;	//友元类 
-		void analysis(char filename[]);
-		void Disp();
+		void analysis(char filename[]);//词法分析 
+		void PrintTree(syntaxtree root);//前序遍历打印语法树 
+		void Program();		//程序语法分析
+		syntaxtree declarationlist(syntaxtree &root);	//声明序列语法分析 
+		void PrintSpace(int step);//按照步长打印空格 
+		
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
+		syntaxtree root=NULL;	//语法树根节点 
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
 		TokenType gettokentype(string str);//获取字符串的标识符 
 		int state;				//词法分析状态 

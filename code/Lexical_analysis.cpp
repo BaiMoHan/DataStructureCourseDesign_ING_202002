@@ -1,7 +1,6 @@
 #ifndef LEXICAL_ANALYSIS_CPP
 #define LEXICAL_ANALYSIS_CPP
 #include "Lexical_analysis.h"
-//#include "Parser.h"
 #include <stdio.h>
 #include <iostream>	//C++的输入输出流 
 #include <iomanip>	//C++的格式控制
@@ -11,6 +10,7 @@ int judge_ch_id(char ch);//判断是否是构成标识符的函数
 
 Lexer::Lexer()
 {//Lexer类构造函数 
+	index=0;		//初始化取词索引 
 	linecount=1;	//初始化行号 
 	vectorindex=0;	//初始化tokenlist索引 
 	state=0;		//自动机初始状态 
@@ -23,20 +23,22 @@ Lexer::Lexer()
 
 	//调用词法识别器 
 	analysis(filename);
-//	if(DFAflag)			//如果词法分析成功
+	if(DFAflag)			//如果词法分析成功
+	{ 
 		 PrintWords();	//打印词法分析的结果 
-//	else
-//		printf("\nDFA出现错误！"); 
+		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
+	} 
+	else
+	{
+		printf("词法分析出现错误！是否选择查看词法分析结果？");
+		printf("输入1代表查看结果,0代表不查看结果：\nchosee=");
+		scanf("%d",&DFAflag);		//读取用户输入的结果 
+		if(DFAflag)		//如果输入的是1
+			PrintWords();//打印词法分析的结果
+		printf("由于出现错误，无法继续进行语法分析，请纠错后再打开程序分析！\n"); 
+	 } 
 
  } 
- 
- 
-void Lexer::Disp()
-{
-	printf("请输入需要打开的文件名(不超过30个字符),filename=");
-	scanf("%s",filename);
-	printf("%s",filename);
-}
 
 
 void Lexer::analysis(char filename[])
@@ -143,7 +145,7 @@ void Lexer::analysis(char filename[])
 				 	t.linenum=linecount;	//保存该flaot常量的行号
 					t.times=0;			//保存该常量出现的次数为0，常量不需要记录出现次数 
 					t.tokenstring=str;		//保存该常量完整的字符串形式
-					t.tokentype=FLOAT_CONST;//保存float常量的识别码
+					t.tokentype=FLOATCONST;//保存float常量的识别码
 					tokenlist.push_back(t);	//加入tokenlist中去
 					Const.push_back(vectorindex);//将该浮点数的常量索引保存
 					vectorindex++;		//tokenlist索引自增 
@@ -188,7 +190,6 @@ void Lexer::analysis(char filename[])
 				if(ch==-1)		//读到文件末尾
 					break;		//提前退出 
 			}
-//			string tempstr;		//定义一个临时string类对象 
 			tempstr="include";	//存放理想字符串情况 
 			if(str==tempstr)	//如果两字符串相等
 			{	
@@ -229,7 +230,7 @@ void Lexer::analysis(char filename[])
 						t.linenum=linecount;	//更新<xxxx>的行号
 						t.tokenstring=str;		//更新库形式完整串
 						t.times=0;				//不需要记录库名出现的次数
-						t.tokentype=STRING_CONST;//把库名当成字符串常量来处理
+						t.tokentype=STRINGCONST;//把库名当成字符串常量来处理
 						tokenlist.push_back(t);	//加入到tokenlist中去
 						Const.push_back(vectorindex);//保留字符串常量在tokenlist中的记录
 						vectorindex++;			//tokenlist索引自增
@@ -259,7 +260,7 @@ void Lexer::analysis(char filename[])
 						t.linenum=linecount;	//更新<xxxx>的行号
 						t.tokenstring=str;		//更新库形式完整串
 						t.times=0;				//不需要记录库名出现的次数
-						t.tokentype=STRING_CONST;//把库名当成字符串常量来处理
+						t.tokentype=STRINGCONST;//把库名当成字符串常量来处理
 						tokenlist.push_back(t);	//加入到tokenlist中去
 						Const.push_back(vectorindex);//保留字符串常量在tokenlist中的记录
 						vectorindex++;			//tokenlist索引自增
@@ -307,7 +308,7 @@ void Lexer::analysis(char filename[])
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
-					t.tokentype=ADD_EQ;//+=的识别码
+					t.tokentype=ADDEQ;//+=的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
 					Operator.push_back(vectorindex);//记录+=在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增
@@ -350,7 +351,7 @@ void Lexer::analysis(char filename[])
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
-					t.tokentype=REDUCE_EQ;//+=的识别码
+					t.tokentype=REDUCEEQ;//+=的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
 					Operator.push_back(vectorindex);//记录-=在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增
@@ -381,7 +382,7 @@ void Lexer::analysis(char filename[])
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
-					t.tokentype=MUTIPLY_EQ;//*=的识别码
+					t.tokentype=MUTIPLYEQ;//*=的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
 					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增
@@ -403,6 +404,37 @@ void Lexer::analysis(char filename[])
 				break;
 			}	//处理* *= 状态结束 
 			
+			case '%':{	//处理% %= 情况 
+				str+=ch;	//进行拼接 
+				ch=fgetc(fp);	//读取下一个字符 
+				 if(ch=='=')//后面紧跟着=
+				{
+					str+=ch;	//第二个=加入拼接
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=MODEQ;//*=的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					vectorindex++; //tokenlist索引自增
+					str="";			//重置拼接串 
+				 } //处理*=状态结束 
+				else	//不是紧跟着= 
+				{
+					if(ch!=-1)	//如果没有读到文件末尾 
+						fseek(fp,-1,SEEK_CUR);	//回退多读的字符
+					t.linenum=linecount;//更新行号
+					t.times=0;		//操作符不需要记录次数
+					t.tokenstring=str;//更新拼接的完整串
+					t.tokentype=MOD; //*的识别码
+					tokenlist.push_back(t);//加入tokenlist中 
+					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
+					vectorindex++; 	//索引自增 
+					str="";			//重置拼接串 
+				 } //处理*状态结束 
+				break;
+			}	//处理* *= 状态结束 
+			
 			case '/':{	//处理* /= 情况 以及 /* // 注释问题 
 				str+=ch;	//进行拼接 
 				ch=fgetc(fp);	//读取下一个字符 
@@ -413,7 +445,7 @@ void Lexer::analysis(char filename[])
 					t.linenum=linecount;//更新行号
 					t.times=0;		//操作符不需要记录次数
 					t.tokenstring=str;//更新拼接的完整串
-					t.tokentype=DIVIDE_EQ;//*=的识别码
+					t.tokentype=DIVIDEEQ;//*=的识别码
 					tokenlist.push_back(t);//加入tokenlist中 
 					Operator.push_back(vectorindex);//记录++在tokenlist中的索引
 					vectorindex++; //tokenlist索引自增
@@ -525,20 +557,7 @@ void Lexer::analysis(char filename[])
 				if(ch!=';')		
 					fseek(fp,-1,SEEK_CUR); 
 				break;
-			} //处理;分隔符状态结束 
-			
-			case '%':{		//处理%状态 
-				str+=ch;				//拼接 
-				t.linenum=linecount;	//更新行号
-				t.times=0;				//操作符符不需要记录次数 
-				t.tokenstring=str;		//更新拼接串
-				t.tokentype=MOD;		//%识别码
-				tokenlist.push_back(t);	//加入到tokenlist中去
-				Operator.push_back(vectorindex);//记录在tokenlist中的索引
-				vectorindex++;			//tokenlist索引自增
-				str="";					//重置拼接串
-				break;
-			} //处理%状态结束 
+			} //处理;分隔符状态结束 			
 			
 			case '&':{		//处理&&运算符,本次任务要求不考虑&位运算符情况
 				str+=ch;				//拼接 
@@ -770,7 +789,7 @@ void Lexer::analysis(char filename[])
 						t.linenum=linecount;//更新行号
 						t.times=0;			//常量不需要记录出现的次数
 						t.tokenstring=str;	//更新常量的完整串
-						t.tokentype=CHAR_CONST;//字符常量的识别码
+						t.tokentype=CHARCONST;//字符常量的识别码
 						tokenlist.push_back(t);//加入到tokenlist中去
 						Const.push_back(vectorindex);//保存字符常量在tokenlist中索引
 						vectorindex++;		//tokenlist索引自增
@@ -816,7 +835,7 @@ void Lexer::analysis(char filename[])
 					t.linenum=linecount;//更新行号
 					t.times=0;			//常量不需要记录出现的次数
 					t.tokenstring=str;	//更新常量的完整串
-					t.tokentype=CHAR_CONST;//字符常量的识别码
+					t.tokentype=CHARCONST;//字符常量的识别码
 					tokenlist.push_back(t);//加入到tokenlist中去
 					Const.push_back(vectorindex);//保存字符常量在tokenlist中索引
 					vectorindex++;		//tokenlist索引自增
@@ -872,6 +891,31 @@ void Lexer::analysis(char filename[])
 				break;
 			} 
 			
+			case '!':{		//处理!=状态开始
+				str+=ch;	//加入拼接
+				ch=fgetc(fp);	//读入下一个字符
+				if(ch=='=')		//如果下一个字符是=，就能构成!=
+				{
+					str+=ch;	//加入拼接
+					t.linenum=linecount;	//更新行号
+					t.times=0;		//操作符不需要统计出现次数
+					t.tokenstring=str;	//加入完整拼接串
+					t.tokentype=NOTEQ;	//!=的识别码
+					tokenlist.push_back(t);	//加入tokenlist中去
+					Operator.push_back(vectorindex);//保存在tokenlist中的索引
+					vectorindex++;		//tokenlist索引自增
+					str="";				//重置拼接串 
+				 } 
+				else		//不能构成!=
+				{
+					//！是非法字符 
+					printf("ERROR:Illegal character '!';Located on line No.%d\n",linecount); 
+					fseek(fp,-1,SEEK_CUR);	//回退多读的字符 
+				 } 
+				break;
+			}
+			
+			
 			default :{		//其他非法字符 
 				printf("ERROR:Illegal character '%c';Located on line No.%d\n",ch,linecount); 
 				DFAflag=0;		//词法分析出现错误 
@@ -881,6 +925,12 @@ void Lexer::analysis(char filename[])
 		} //end of switch	
 			 
 	}	//end of while(ch!=EOF)
+	t.linenum=linecount+1;	//结束时换到下一行
+	t.times=0;				//结束标记不需要记录
+	t.tokenstring=ENDFILE;	//结束类型
+	str='\0';				//结束字符
+	t.tokenstring=str;		//加入结束字符 
+	tokenlist.push_back(t);	//加入tokenlist中去作为程序终止 
 	
 	fclose(fp); 	//操作完后关闭文件 
 	
@@ -891,6 +941,8 @@ int judge_ch_id(char ch)
 {	//标识符后面的字母可能是数字 大小写字母 
 	return (ch=='_'||(ch>='a'&&ch<='z')||(ch>='A'&&ch<='Z')||'1'<=ch&&ch<='9')&&EOF;
 }
+
+
 int Lexer::counttimes(string str)
 {
 	int i,count=1;	//设置循环变量，计数器变量，标识符一开始是第一次出现 
@@ -901,6 +953,9 @@ int Lexer::counttimes(string str)
 	 } 
 	return count; 
  } 
+ 
+
+ 
 TokenType Lexer::gettokentype(string str)
 {		//获取str对应的识别码 
 	if(str=="int")		//int 
@@ -938,6 +993,8 @@ TokenType Lexer::gettokentype(string str)
 	else					// 
 		return ID;
 }
+
+
 void Lexer::PrintWords()
 {
 	int i;	//循环变量
@@ -994,4 +1051,92 @@ void Lexer::PrintWords()
 	 } 
 	printf("-----------------------------------------------------\n");
 }
+
+void Lexer::PrintSpace(int step)	//按步长打印空格
+{
+	cout<<endl;			//输出一个换行 
+	for(int i=0;i=step;i++)//输出步长的空格
+		printf(" "); 		
+ } 
+ 
+ 
+void Lexer::Program()	//程序语法分析函数开始
+{
+	root=new syntaxnode; 
+	if(root==NULL)	//判断内存是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	root->kind=rt;	//根节点特殊结点 
+	root->child=NULL;//初始化孩子
+	root->sibling=NULL;//初始化兄弟结点 
+	root->listindex=-1;	//初始化索引 
+
+	if(declarationlist(root)!=NULL)			//调用声明序列 
+	{
+		printf("\n\n语法树打印如上！");
+	}
+	else
+	{
+		printf("\n\n出现语法错误，生成语法树失败"); 
+	 } 
+		 
+	  
+ } 
+ 
+ 
+syntaxtree Lexer::declarationlist(syntaxtree &root)	//声明序列处理函数 
+{
+	while(tokenlist[index].tokentype==COMMENT)	//过滤掉注释
+		index++;
+	if(tokenlist[index].tokentype>=1&&tokenlist[index].tokentype<=6) //如果是类型声明 
+	{
+		syntaxtree p=new syntaxnode;	//申请类型结点的空间
+		if(p==NULL)	//判断内存是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		p->kind=exdeflist;	//生成外部序列结点 
+		root->child=p;	//该外部序列结点作为根节点的左孩子 
+		p->child=NULL;	//该外部序列结点暂时没有左孩子 
+	}
+	else if(tokenlist[index].tokentype==CONST)		//const型后才是类型声明
+	{
+		
+	 }
+	else			//无类型声明
+		return NULL;		//返回空指针 
+	syntaxtree p;	//声明一个结点指针 
+	p=new syntaxnode;
+	if(p=NULL)	//判断内存是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	 root->child=p;	//该声明结点是根节点的第一个孩子,左子树
+	 p->kind=datatype;//p结点的第一个孩子是数据类型 
+	 p
+	  
+	
+ } 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 #endif
