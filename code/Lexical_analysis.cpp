@@ -5,6 +5,7 @@
 #include <iostream>	//C++的输入输出流 
 #include <iomanip>	//C++的格式控制
 #define width 15 
+#define ERROR -1
 int judge_ch_id(char ch);//判断是否是构成标识符的函数 
 
 
@@ -1075,7 +1076,7 @@ void Lexer::Program()	//程序语法分析函数开始
 	root->sibling=NULL;//初始化兄弟结点 
 	root->listindex=-1;	//初始化索引 
 
-	if(declarationlist(root)!=NULL)			//调用声明序列 
+	if(DeclarationList(root)!=ERROR)			//调用声明序列 
 	{
 		printf("\n\n语法树打印如上！");
 	}
@@ -1088,47 +1089,42 @@ void Lexer::Program()	//程序语法分析函数开始
  } 
  
  
-syntaxtree Lexer::declarationlist(syntaxtree &root)	//声明序列处理函数 
+int Lexer::Declarationlist(syntaxtree &root)	//声明序列处理函数 
 {
 	while(tokenlist[index].tokentype==COMMENT)	//过滤掉注释
 		index++;
 	if(tokenlist[index].tokentype>=1&&tokenlist[index].tokentype<=6) //如果是类型声明 
 	{
-		syntaxtree p=new syntaxnode;	//申请类型结点的空间
-		if(p==NULL)	//判断内存是否申请成功
+		if(tokenlist[index+1].tokentype==ID)	//类型声明时候肯定是标识符
 		{
-			//输出信息 
-			printf("内存申请失败！\n内存不够，自动关闭\n");
-			getchar();getchar();	//等待用户响应 
-			exit(0);
+			Declaration();				//调用声明处理函数 
+		}
+		else //类型声明之后不是标识符的情况就是错误
+		{
+			printf("ERROR:type-specifier needs Identifier;Locatied on line No.%d '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			printf("语法树分析遇到错误，自动释放空间");
+			printf("请纠错后，重新生成语法树\n");
+			DeleteTree(root);		//释放树空间 
+			return ERROR; 			//返回ERROR值 
 		 } 
-		p->kind=exdeflist;	//生成外部序列结点 
-		root->child=p;	//该外部序列结点作为根节点的左孩子 
-		p->child=NULL;	//该外部序列结点暂时没有左孩子 
-	}
+	}//处理类型声明结束 
 	else if(tokenlist[index].tokentype==CONST)		//const型后才是类型声明
 	{
 		
 	 }
-	else			//无类型声明
-		return NULL;		//返回空指针 
-	syntaxtree p;	//声明一个结点指针 
-	p=new syntaxnode;
-	if(p=NULL)	//判断内存是否申请成功
-	{
-		//输出信息 
-		printf("内存申请失败！\n内存不够，自动关闭\n");
-		getchar();getchar();	//等待用户响应 
-		exit(0);
-	 } 
-	 root->child=p;	//该声明结点是根节点的第一个孩子,左子树
-	 p->kind=datatype;//p结点的第一个孩子是数据类型 
-	 p
-	  
 	
  } 
  
- 
+void Lexer::DeleteTree(syntaxtree root)
+{
+	if(root)		//如果树存在 
+	{
+		DeleteTree(root->child);	//释放左子树孩子结点 
+		DeleteTree(root->sibling);	//释放右子树sibling结点
+		delete root;				//释放根结点 
+	 } 
+	 return ; 
+ } 
  
  
  

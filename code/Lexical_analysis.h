@@ -50,10 +50,13 @@ class Lexer	//词法分析类
 		Lexer();		//构造函数 
 		void analysis(char filename[]);//词法分析 
 		void PrintTree(syntaxtree root);//前序遍历打印语法树 
-		void Program();		//程序语法分析
-		syntaxtree declarationlist(syntaxtree &root);	//声明序列语法分析 
+		int Program();		//程序语法分析
+		int DeclarationList(syntaxtree root);	//声明序列语法分析 
+		int Declaration();		//声明语法分析
+		int VarDeclaration();	//变量声明
+		int FunctionDeclaration();	//函数声明 
 		void PrintSpace(int step);//按照步长打印空格 
-		
+		void DeleteTree(syntaxtree& root);	//释放树空间 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
 		syntaxtree root=NULL;	//语法树根节点 
