@@ -3,6 +3,8 @@
 #include<vector>	//借助vector实现tokenlist 
 #include<string>	//借助String类 
 #define MAXINDEX 100	//数组最大容量 
+#define status int		//定义函数返回值 
+#define ERROR -1
 
 
 using namespace std;
@@ -30,8 +32,8 @@ typedef struct token{
 }token;
 
 typedef enum{	//定义语法树的结点类别
-	//根节点,外部定义序列,外部变量定义,函数定义, 数据类型 
-	rt=1,exdeflist,exvardef,funcdef,datatype,
+	//根节点,文件包含节点,引用文件名节点,外部定义序列,外部变量声明,函数定义, 数据类型 
+	rt=1,inclu,inclufile,exdeflist,exvardef,exfuncdef,datatype,
 }nodekind;
 
 	
@@ -50,13 +52,13 @@ class Lexer	//词法分析类
 		Lexer();		//构造函数 
 		void analysis(char filename[]);//词法分析 
 		void PrintTree(syntaxtree root);//前序遍历打印语法树 
-		int Program();		//程序语法分析
-		int DeclarationList(syntaxtree root);	//声明序列语法分析 
-		int Declaration();		//声明语法分析
-		int VarDeclaration();	//变量声明
-		int FunctionDeclaration();	//函数声明 
-		void PrintSpace(int step);//按照步长打印空格 
-		void DeleteTree(syntaxtree& root);	//释放树空间 
+		status Program();		//程序语法分析
+		status DeclarationList(syntaxtree& T);	//声明序列语法分析 
+//		status Declaration();		//声明语法分析
+//		int VarDeclaration();	//变量声明
+//		int FunctionDeclaration();	//函数声明 
+//		void PrintSpace(int step);//按照步长打印空格 
+//		void DeleteTree(syntaxtree& root);	//释放树空间 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
 		syntaxtree root=NULL;	//语法树根节点 

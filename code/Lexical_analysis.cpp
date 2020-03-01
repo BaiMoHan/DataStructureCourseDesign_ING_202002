@@ -1053,79 +1053,79 @@ void Lexer::PrintWords()
 	printf("-----------------------------------------------------\n");
 }
 
-void Lexer::PrintSpace(int step)	//按步长打印空格
-{
-	cout<<endl;			//输出一个换行 
-	for(int i=0;i=step;i++)//输出步长的空格
-		printf(" "); 		
- } 
+//void Lexer::PrintSpace(int step)	//按步长打印空格
+//{
+//	cout<<endl;			//输出一个换行 
+//	for(int i=0;i=step;i++)//输出步长的空格
+//		printf(" "); 		
+// } 
+// 
+ 
+//void Lexer::Program()	//程序语法分析函数开始
+//{
+//	root=new syntaxnode; 
+//	if(root==NULL)	//判断内存是否申请成功
+//	{
+//		//输出信息 
+//		printf("内存申请失败！\n内存不够，自动关闭\n");
+//		getchar();getchar();	//等待用户响应 
+//		exit(0);
+//	 } 
+//	root->kind=rt;	//根节点特殊结点 
+//	root->child=NULL;//初始化孩子
+//	root->sibling=NULL;//初始化兄弟结点 
+//	root->listindex=-1;	//初始化索引 
+//
+//	if(DeclarationList(root)!=ERROR)			//调用声明序列 
+//	{
+//		printf("\n\n语法树打印如上！");
+//	}
+//	else
+//	{
+//		printf("\n\n出现语法错误，生成语法树失败"); 
+//	 } 
+//		 
+//	  
+// } 
  
  
-void Lexer::Program()	//程序语法分析函数开始
-{
-	root=new syntaxnode; 
-	if(root==NULL)	//判断内存是否申请成功
-	{
-		//输出信息 
-		printf("内存申请失败！\n内存不够，自动关闭\n");
-		getchar();getchar();	//等待用户响应 
-		exit(0);
-	 } 
-	root->kind=rt;	//根节点特殊结点 
-	root->child=NULL;//初始化孩子
-	root->sibling=NULL;//初始化兄弟结点 
-	root->listindex=-1;	//初始化索引 
-
-	if(DeclarationList(root)!=ERROR)			//调用声明序列 
-	{
-		printf("\n\n语法树打印如上！");
-	}
-	else
-	{
-		printf("\n\n出现语法错误，生成语法树失败"); 
-	 } 
-		 
-	  
- } 
- 
- 
-int Lexer::Declarationlist(syntaxtree &root)	//声明序列处理函数 
-{
-	while(tokenlist[index].tokentype==COMMENT)	//过滤掉注释
-		index++;
-	if(tokenlist[index].tokentype>=1&&tokenlist[index].tokentype<=6) //如果是类型声明 
-	{
-		if(tokenlist[index+1].tokentype==ID)	//类型声明时候肯定是标识符
-		{
-			Declaration();				//调用声明处理函数 
-		}
-		else //类型声明之后不是标识符的情况就是错误
-		{
-			printf("ERROR:type-specifier needs Identifier;Locatied on line No.%d '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-			printf("语法树分析遇到错误，自动释放空间");
-			printf("请纠错后，重新生成语法树\n");
-			DeleteTree(root);		//释放树空间 
-			return ERROR; 			//返回ERROR值 
-		 } 
-	}//处理类型声明结束 
-	else if(tokenlist[index].tokentype==CONST)		//const型后才是类型声明
-	{
-		
-	 }
-	
- } 
- 
-void Lexer::DeleteTree(syntaxtree root)
-{
-	if(root)		//如果树存在 
-	{
-		DeleteTree(root->child);	//释放左子树孩子结点 
-		DeleteTree(root->sibling);	//释放右子树sibling结点
-		delete root;				//释放根结点 
-	 } 
-	 return ; 
- } 
- 
+//int Lexer::DeclarationList(syntaxtree &root)	//声明序列处理函数 
+//{
+//	while(tokenlist[index].tokentype==COMMENT)	//过滤掉注释
+//		index++;
+//	if(tokenlist[index].tokentype>=1&&tokenlist[index].tokentype<=6) //如果是类型声明 
+//	{
+//		if(tokenlist[index+1].tokentype==ID)	//类型声明时候肯定是标识符
+//		{
+////			Declaration();				//调用声明处理函数 
+//		}
+//		else //类型声明之后不是标识符的情况就是错误
+//		{
+//			printf("ERROR:type-specifier needs Identifier;Locatied on line No.%d '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+//			printf("语法树分析遇到错误，自动释放空间");
+//			printf("请纠错后，重新生成语法树\n");
+//			DeleteTree(root);		//释放树空间 
+//			return ERROR; 			//返回ERROR值 
+//		 } 
+//	}//处理类型声明结束 
+//	else if(tokenlist[index].tokentype==CONST)		//const型后才是类型声明
+//	{
+//		
+//	 }
+//	
+// } 
+// 
+//void Lexer::DeleteTree(syntaxtree& root)
+//{
+//	if(root)		//如果树存在 
+//	{
+//		DeleteTree(root->child);	//释放左子树孩子结点 
+//		DeleteTree(root->sibling);	//释放右子树sibling结点
+//		delete root;				//释放根结点 
+//	 } 
+//	 return ; 
+// } 
+// 
  
  
  
