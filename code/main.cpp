@@ -7,7 +7,7 @@ int main()
 	printf("--------------------------------------------------\n");
 	Lexer L;
 
-	printf("½áÊø");
+	printf("\n½áÊø");
 	getchar();
 	getchar();
 	 

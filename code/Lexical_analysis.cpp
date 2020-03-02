@@ -28,6 +28,7 @@ Lexer::Lexer()
 	{ 
 		 PrintWords();	//打印词法分析的结果 
 		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
+		 Program();
 	} 
 	else
 	{
@@ -486,6 +487,7 @@ void Lexer::analysis(char filename[])
 						fgetc(fp);	//文件指针后移一位，因为之前往前移动了两位 
 						t.times=0;	//不存在记录注释出现的次数 
 						t.tokenstring=str;//保存拼接串
+						t.tokentype=COMMENT;	//注释的识别码 
 						tokenlist.push_back(t);//存入tokenlist中去
 						Comment.push_back(vectorindex);//保存注释在tokenlist中的索引
 						vectorindex++;		//tokenlist索引自增
@@ -1053,13 +1055,7 @@ void Lexer::PrintWords()
 	printf("-----------------------------------------------------\n");
 }
 
-//void Lexer::PrintSpace(int step)	//按步长打印空格
-//{
-//	cout<<endl;			//输出一个换行 
-//	for(int i=0;i=step;i++)//输出步长的空格
-//		printf(" "); 		
-// } 
-// 
+
  
 //void Lexer::Program()	//程序语法分析函数开始
 //{
@@ -1115,17 +1111,7 @@ void Lexer::PrintWords()
 //	
 // } 
 // 
-//void Lexer::DeleteTree(syntaxtree& root)
-//{
-//	if(root)		//如果树存在 
-//	{
-//		DeleteTree(root->child);	//释放左子树孩子结点 
-//		DeleteTree(root->sibling);	//释放右子树sibling结点
-//		delete root;				//释放根结点 
-//	 } 
-//	 return ; 
-// } 
-// 
+
  
  
  
