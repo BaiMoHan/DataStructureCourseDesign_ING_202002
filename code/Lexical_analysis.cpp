@@ -29,6 +29,7 @@ Lexer::Lexer()
 		 PrintWords();	//打印词法分析的结果 
 		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
 		 Program();
+		 PrintTree(root) ;
 	} 
 	else
 	{

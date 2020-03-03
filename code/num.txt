@@ -3,3 +3,4 @@
 ******MUST ASCII*****3
 ***********************4*/
 #include<sykh.h>        //5
+#include<stdio.h>

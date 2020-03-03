@@ -52,23 +52,15 @@ status Lexer::Program()	//程序语法分析函数开始
 			q->sibling=NULL;				//初始化兄弟节点
 			q->listindex=++index;			//没有报错的情况下,include的后一个就是文件名
 			root->child=p;					//include节点作为root的第一个孩子
-			p->child=q;						//include节点的孩子为按照顺序引用的文件名节点		 
+			p->child=q;						//include节点的孩子为按照顺序引用的文件名节点
+			index++;		 
 		}	//处理第一次遇到include生成节点情况
 		
 		while(tokenlist[index].tokentype==COMMENT)	//处理行尾注释
 			index++;				//取词索引自增,相当于过滤掉注释
 				 
 	 } //处理include的while结束 
-	
-//	if(DeclarationList(root->child)!=ERROR)			//调用外部声明序列 处理函数 
-//	{
-//		printf("\n\n语法树打印如上！");
-//	}
-//	else
-//	{
-//		printf("\n\n出现语法错误，生成语法树失败"); 
-//	 } 		 
-	PrintTree(root);	  
+  
  } 
 
 
