@@ -1,6 +1,4 @@
-/************************1
-****test program*********2
-******MUST ASCII*****3
-***********************4*/
-#include<sykh.h>        //5
+#include<sykh.h>
 #include<stdio.h>
+#include<ioman.p>
+#include<iostream>

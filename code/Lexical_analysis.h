@@ -51,7 +51,7 @@ class Lexer	//词法分析类
 		int index; 			//在tokenlist中的取词索引 
 		Lexer();		//构造函数 
 		void analysis(char filename[]);//词法分析 
-		status Program();		//程序语法分析
+		status Program(syntaxtree &root);		//程序语法分析
 		status DeclarationList(syntaxtree& T);	//声明序列语法分析 
 //		status Declaration();		//声明语法分析
 //		int VarDeclaration();	//变量声明

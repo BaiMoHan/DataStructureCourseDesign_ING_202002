@@ -27,3 +27,12 @@ This is my data structure course design in Huazhong University of Science and Te
     - I guess it was my computer system that caused the problem.
 12. Finish identifying comments `/*XXXXX*/`
 13. Deal with brackets and set test example
+14. Lexer 1.0
+15. Delete friend class parser
+16. Add function Program()
+17. Fail to try writing declarationlist
+18. Add file parser but not a new class
+19. Add function PrintNode() PrintTree() 
+    - finish dealing with one sentence "#include <stdio.h>"
+20. Find the bug at PrintTree()
+21. Rewrite function PrintTree()

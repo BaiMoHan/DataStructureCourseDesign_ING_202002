@@ -6,9 +6,9 @@ using namespace std;
 #include<iostream>
 
 //void PrintNode(syntaxtree p,int step);	//打印树结点函数前置声明 
-status Lexer::Program()	//程序语法分析函数开始
+status Lexer::Program(syntaxtree &root)	//程序语法分析函数开始
 {
-	syntaxtree root=new syntaxnode; 
+	root=new syntaxnode; 
 	if(root==NULL)	//判断内存是否申请成功
 	{
 		//输出信息 
@@ -39,6 +39,7 @@ status Lexer::Program()	//程序语法分析函数开始
 			q->child=NULL;		//新结点的孩子置空
 			q->sibling=NULL;	//新结点的兄弟置空
 			q->listindex=++index;//没有报错的情况下,include的后一个就是文件名 
+			index++;			//索引自增 
 		 } 
 		else		//根节点还没有孩子的情况，即第一次遇到include
 		{ 
@@ -53,13 +54,14 @@ status Lexer::Program()	//程序语法分析函数开始
 			q->listindex=++index;			//没有报错的情况下,include的后一个就是文件名
 			root->child=p;					//include节点作为root的第一个孩子
 			p->child=q;						//include节点的孩子为按照顺序引用的文件名节点
-			index++;		 
+			index++;		 				//索引自增 
 		}	//处理第一次遇到include生成节点情况
 		
 		while(tokenlist[index].tokentype==COMMENT)	//处理行尾注释
 			index++;				//取词索引自增,相当于过滤掉注释
 				 
 	 } //处理include的while结束 
+//	 PrintTree(root); 
   
  } 
 
@@ -103,24 +105,40 @@ void Lexer::PrintTree(syntaxtree& root)
 	stack<syntaxtree> s;//定义一个栈,考虑到采用动态内存 
 	while(p!=NULL||!s.empty())	//当栈空且指针空的时候退出遍历
 	{
-		while(p!=NULL)	//一直 
+		if(p)	//如果当前结点不是NULL
 		{
 			PrintNode(p,step);	//打印当前节点 
-			s.push(p);	//加入当前节点
-			step++;		//每次加入一个左孩子,打印步长就自增
-			p=p->child;	//p移动到下一个孩子 
-		
-		}
-		if(!s.empty())	//栈不为空
-		{
-			p=s.top();	//p为当前栈顶元素,回溯，上一步while退出说明左子树走到底了
-			s.pop();	//弹出栈顶元素
-			p=p->sibling;//左子树已经遍历完毕,移动到右孩子,即此结点的兄弟结点上
-			if(p)	//如果兄弟结点不为空则打印 
-				PrintNode(p,step);//此右子树是兄弟结点,所以步长与左子树的步长是一样的 
+			s.push(p);			//当前节点进栈 
+			step++;				//打印步长自增
+			p=p->child;			//p变为下一个结点 
 		 } 
+		else	//当前节点为NULL,说明根左右,根已经到头了,即左子树遍历完了回溯右子树
+		{
+			p=s.top();		//获得当前栈顶节点
+			s.pop();		//栈顶节点弹出 
+			p=p->sibling;	//变成兄弟节点
+			step--;			//兄弟节点的步长是一样的,减去多自增的一次 
+		 } 
+		 
+//		while(p!=NULL)	//一直 
+//		{
+//			if
+//			PrintNode(p,step);	//打印当前节点 
+//			s.push(p);	//加入当前节点
+//			step++;		//每次加入一个左孩子,打印步长就自增
+//			p=p->child;	//p移动到下一个孩子 
+//		
+//		}
+//		if(!s.empty())	//栈不为空
+//		{
+//			p=s.top();	//p为当前栈顶元素,回溯，上一步while退出说明左子树走到底了
+//			s.pop();	//弹出栈顶元素
+//			p=p->sibling;//左子树已经遍历完毕,移动到右孩子,即此结点的兄弟结点上
+//			if(p)	//如果兄弟结点不为空则打印 
+//				PrintNode(p,step);//此右子树是兄弟结点,所以步长与左子树的步长是一样的 
+//		 } 
 	 } 
-	printf("打印完毕");
+	printf("\n\n打印完毕");
  } 
  
  void Lexer::PrintNode(syntaxtree p,int step)
