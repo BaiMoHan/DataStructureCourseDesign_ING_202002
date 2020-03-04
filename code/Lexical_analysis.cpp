@@ -28,7 +28,7 @@ Lexer::Lexer()
 	{ 
 		 PrintWords();	//打印词法分析的结果 
 		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
-		 Program(root);
+		 Program();
 		 PrintTree(root) ;
 	} 
 	else
@@ -558,8 +558,9 @@ void Lexer::analysis(char filename[])
 				vectorindex++;			//tokenlist索引自增
 				str="";					//重置拼接串
 				ch=fgetc(fp);			//继续读下一个字符
-				if(ch!=';')		
-					fseek(fp,-1,SEEK_CUR); 
+				if(ch!=-1) 
+					if(ch!=';')		
+						fseek(fp,-1,SEEK_CUR); 
 				break;
 			} //处理;分隔符状态结束 			
 			

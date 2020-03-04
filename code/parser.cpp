@@ -6,7 +6,7 @@ using namespace std;
 #include<iostream>
 
 //void PrintNode(syntaxtree p,int step);	//打印树结点函数前置声明 
-status Lexer::Program(syntaxtree &root)	//程序语法分析函数开始
+status Lexer::Program()	//程序语法分析函数开始
 {
 	root=new syntaxnode; 
 	if(root==NULL)	//判断内存是否申请成功
@@ -61,17 +61,46 @@ status Lexer::Program(syntaxtree &root)	//程序语法分析函数开始
 			index++;				//取词索引自增,相当于过滤掉注释
 				 
 	 } //处理include的while结束 
+	 
+	p=root->child;	//p指向根节点的孩子 
+	while(p&&p->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
+	{
+		p=p->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
+	 } 
+	DeclarationList();		//调用外部声明语句,最后一个兄弟节点的地址作为形参传入 
+	 
 //	 PrintTree(root); 
   
  } 
 
 
 
-status Lexer::DeclarationList(syntaxtree& T)	//声明序列语法分析
-{
+status Lexer::DeclarationList()	//声明序列语法分析
+{ 
+
+	if(tokenlist[index].tokentype==ENDFILE)		//读到程序尾
+	{
+		return OK;			//返回正确值 
+	 } 
+	 
+	syntaxtree 	p=root->child;	//中间指针p指向根节点的孩子 
+	while(p&&p->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
+	{
+		p=p->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
+	 } 
+	 
 	if(1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)//如果是类型声明
 	{
-		
+		if(tokenlist[index+2].tokentype==BRACKETL)		//如果类型声明之后第二个串是左括号,说明是外部函数相关的
+		{
+			if(tokenlist[index+4].tokentype==SEMI)		//如果该行是以分号结尾,说明是函数前置声明
+			{
+				if(FunctionDeclaration()==OK)	//如果函数声明分析程序返回正确值
+				{
+//					DeclarationList();
+				 } 
+			 } 
+		 } 
 	}	//处理类型声明结束
 	else if(tokenlist[index].tokentype==INCLUDE)	//include语句
 	{
@@ -79,6 +108,54 @@ status Lexer::DeclarationList(syntaxtree& T)	//声明序列语法分析
 	}	//处理include语句结束
 	
  } 
+ 
+ status Lexer::FunctionDeclaration()
+ {
+ 	
+// 	syntaxtree T=root;
+ 	syntaxtree 	T=root->child;	//中间指针p指向根节点的孩子 
+	while(T&&T->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
+	{
+		T=T->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
+	 } 
+ 	syntaxtree p=new syntaxnode;	//外部函数声明节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->kind=exfuncdecla;	//该节点的标识码设定唯exfuncdecla
+	p->sibling=NULL;		//兄弟节点设为NULL
+	T->sibling=p;			//p节点作为形参T的兄弟节点 
+	syntaxtree q=new syntaxnode;	//返回值类型节点申请空间
+	if(q==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	q->kind=functype;		//设定节点识别码为functype
+	q->listindex=index++;	//保存tokenlist中索引
+	q->child=NULL;			//函数返回值类型节点无孩子
+	p->child=q;				//函数返回值类型节点是外部函数声明节点的孩子
+	p=new syntaxnode;		//为函数名节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 }  
+	q->sibling=p;	//函数名节点是返回值节点的兄弟节点
+	p->kind=funcname;//函数名节点的类别码设为funcname
+	p->listindex=index++;//保存tokenlist中的函数名索引 
+	p->child=NULL;	//函数名节点无孩子
+	p->sibling=NULL;//兄弟节点置空 
+	return OK;
+ }
  
  void PrintSpace(int step)	//按步长打印空格
 {
@@ -119,24 +196,6 @@ void Lexer::PrintTree(syntaxtree& root)
 			p=p->sibling;	//变成兄弟节点
 			step--;			//兄弟节点的步长是一样的,减去多自增的一次 
 		 } 
-		 
-//		while(p!=NULL)	//一直 
-//		{
-//			if
-//			PrintNode(p,step);	//打印当前节点 
-//			s.push(p);	//加入当前节点
-//			step++;		//每次加入一个左孩子,打印步长就自增
-//			p=p->child;	//p移动到下一个孩子 
-//		
-//		}
-//		if(!s.empty())	//栈不为空
-//		{
-//			p=s.top();	//p为当前栈顶元素,回溯，上一步while退出说明左子树走到底了
-//			s.pop();	//弹出栈顶元素
-//			p=p->sibling;//左子树已经遍历完毕,移动到右孩子,即此结点的兄弟结点上
-//			if(p)	//如果兄弟结点不为空则打印 
-//				PrintNode(p,step);//此右子树是兄弟结点,所以步长与左子树的步长是一样的 
-//		 } 
 	 } 
 	printf("\n\n打印完毕");
  } 
@@ -162,6 +221,24 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("外部文件:%s",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		} 
+		
+		case exfuncdecla:{	//处理外部函数声明节点 
+			PrintSpace(step);//输出前置空格
+			printf("外部函数声明:"); 
+			break;
+		}
+		
+		case functype:{		//处理函数返回值类型节点
+			PrintSpace(step);//输出前置空格 
+			printf("函数返回值类型:%s",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		}
+		
+		case funcname:{		//处理函数名节点
+			PrintSpace(step);//输出前置空格
+			printf("函数名:",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		}
 	  
 	 }
   } 
