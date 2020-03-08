@@ -67,7 +67,10 @@ status Lexer::Program()	//程序语法分析函数开始
 	{
 		p=p->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
 	 } 
-	DeclarationList();		//调用外部声明语句,最后一个兄弟节点的地址作为形参传入 
+	if(DeclarationList()==OK)		//调用外部声明语句,最后一个兄弟节点的地址作为形参传入 
+	{
+		printf("\n\n语法分析成功\n"); 
+	}
 	 
 //	 PrintTree(root); 
   
@@ -93,26 +96,43 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	{
 		if(tokenlist[index+2].tokentype==BRACKETL)		//如果类型声明之后第二个串是左括号,说明是外部函数相关的
 		{
-			if(tokenlist[index+4].tokentype==SEMI)		//如果该行是以分号结尾,说明是函数前置声明
+			int i=index;	//中间循环变量 
+			while(tokenlist[i].tokentype!=SEMI)		//找分号
+			{
+				i++;
+			 } 
+			 
+			if(tokenlist[i].linenum==tokenlist[index].linenum)	//如果该行是以分号结尾,说明是函数前置声明
 			{
 				if(FunctionDeclaration()==OK)	//如果函数声明分析程序返回正确值
 				{
-//					DeclarationList();
+					DeclarationList();
 				 } 
-			 } 
+			 }
+			else	//那么就是函数定义,调用函数定义处理函数 
+			{
+				
+			}
+		 } 
+		else if(tokenlist[index+2].tokentype==SEMI)	//如果类型声明之后的第二个串（标识符）之后的是分号,变量声明 
+		{
+			
 		 } 
 	}	//处理类型声明结束
-	else if(tokenlist[index].tokentype==INCLUDE)	//include语句
+	
+	else 
 	{
 		
-	}	//处理include语句结束
+	}	
 	
  } 
  
+ /******************************************************
+ 函数功能：处理外部函数声明 
+ ******************************************************/
  status Lexer::FunctionDeclaration()
  {
  	
-// 	syntaxtree T=root;
  	syntaxtree 	T=root->child;	//中间指针p指向根节点的孩子 
 	while(T&&T->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
 	{
@@ -151,19 +171,125 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	 }  
 	q->sibling=p;	//函数名节点是返回值节点的兄弟节点
 	p->kind=funcname;//函数名节点的类别码设为funcname
-	p->listindex=index++;//保存tokenlist中的函数名索引 
+	p->listindex=index++;//保存tokenlist中的函数名索引,此时index指向（ 
 	p->child=NULL;	//函数名节点无孩子
 	p->sibling=NULL;//兄弟节点置空 
-	return OK;
+	if(ParameterList(p)==OK)	//调用函数形参处理函数 
+	{
+		return OK; 
+	}
  }
- 
+
+/***************************************************
+函数功能：处理函数形参序列 
+****************************************************/
+status Lexer::ParameterList(syntaxtree& T)
+{
+	index++;	//进入的时候是（，此条语句是移动索引到下一位
+	if(tokenlist[index].tokentype==BRACKETR) //如果是右括号,说明无形参声明序列
+	{
+		syntaxtree p=NULL;	//声明中间指针
+		p=new syntaxnode;	//为函数形参 
+		if(p==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 }  
+		p->kind=nonfuncparam;	//设置函数空形参序列节点的识别码为nonfuncparam
+		p->child=NULL;		//孩子置空
+		p->sibling=NULL;	//兄弟节点置空
+		T->sibling=p;		//该节点作为传入形参的兄弟节点
+		return OK;			//返回正确值 
+ 	}
+ 	else //不是右括号,说明应该是形参序列
+	{ 
+		syntaxtree p=NULL;	//声明中间指针
+		p=new syntaxnode;	//为函数形参 
+		if(p==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 }  
+		p->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
+		p->child=NULL;		//孩子置空
+		p->sibling=NULL;	//兄弟节点置空
+		T->sibling=p;		//该节点作为传入形参的兄弟节点
+		if(Parameter(p)==OK);			//处理函数形参 
+	}
+} 
+/*******************************************************
+函数功能：形参处理函数 
+此时index指向的是(的下一位 
+*******************************************************/
+status Lexer::Parameter(syntaxtree &T)
+{
+	syntaxtree p=NULL;	//声明中间指针
+	p=new syntaxnode;	//为形参具体声明申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 }  
+	if(tokenlist[index].tokentype==CONST)	//如果遇到const类型
+	{
+		
+	 } 
+	else //不是const类型 
+	{
+		if(1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)//如果是数据类型声明
+		{
+			if(tokenlist[index+1]==ID) 
+			{
+				syntaxtree q=NULL;	//声明中间指针
+				q=new syntaxnode;	//为具体形参声明节点申请空间
+				if(q==NULL)		//判断空间是否申请成功
+				{
+					//输出信息 
+					printf("内存申请失败！\n内存不够，自动关闭\n");
+					getchar();getchar();	//等待用户响应 
+					exit(0);
+				 } 
+				q->kind=funcparam;  //设置具体形参声明节点的识别码为funcparam
+				q->child=NULL;		//孩子置空
+				q->sibling=NULL;	//兄弟置空
+				q->listindex=index;	//保存tokenlist中的index
+				T->child=q;			//q为传入形参的孩子节点
+				index+2;			 
+				if(tokenlist[index+2]==COMMA)	//如果标识符后是逗号,说明还有其他形参 
+					;
+					
+			}
+			else //类型声明后不是标识符,说明形参声明错误
+			{
+				printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+				return ERROR; 
+			 } 
+		 }
+		else //不是数据类型声明
+		{
+			printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			return ERROR; 
+		 } 
+	}
+ } 
+/************************************************
+函数功能：按步长打印空格 
+************************************************/ 
  void PrintSpace(int step)	//按步长打印空格
 {
 	printf("\n");			//输出一个换行 
 	for(int i=0;i<step;i++)//输出步长的空格
 		printf("  "); 		
  } 
- 
+/**************************************************
+函数功能：遇到语法分析错误时，销毁该树，释放内存空间 
+***************************************************/ 
  void Lexer::DeleteTree(syntaxtree& root)
 {
 	if(root)		//如果树存在 
@@ -174,7 +300,9 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	 } 
 	 return ; 
  } 
- 
+/******************************************************************************
+函数功能：屏幕上打印语法树 
+******************************************************************************/ 
 void Lexer::PrintTree(syntaxtree& root)
 {
 	syntaxtree p=root;	//声明移动指针
@@ -199,7 +327,9 @@ void Lexer::PrintTree(syntaxtree& root)
 	 } 
 	printf("\n\n打印完毕");
  } 
- 
+ /***********************************************************************************
+ 函数功能：根据语法树节点的类型，输出对应的信息 
+ ************************************************************************************/ 
  void Lexer::PrintNode(syntaxtree p,int step)
  {
  	switch(p->kind){	//根据结点的类型来输出结点
@@ -236,10 +366,15 @@ void Lexer::PrintTree(syntaxtree& root)
 		
 		case funcname:{		//处理函数名节点
 			PrintSpace(step);//输出前置空格
-			printf("函数名:",tokenlist[p->listindex].tokenstring.c_str()); 
+			printf("函数名:%s",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		}
-	  
+	   
+	    case nonfuncparam:{	//处理空形参节点
+			PrintSpace(step);//输出前置空格
+			printf("函数形参序列：空"); 
+			break;
+		} 
 	 }
   } 
  
