@@ -227,56 +227,85 @@ status Lexer::ParameterList(syntaxtree& T)
 *******************************************************/
 status Lexer::Parameter(syntaxtree &T)
 {
+	if(T->child)	//如果一开始有孩子,说明应该当兄弟节点插入
+	{
+	 }
+	else		//第一次插入
+	{
+		T->child=TypeSpecifier();//类型声明处理的返回值地址作为形参序列节点的孩子
+		if(T->child)	//如果孩子不为NULL,说明类型声明正确,下面处理标识符
+		{
+			T->child->sibling=Identifier();//标识符的返回值地址作为类型声明的兄弟节点
+			if(T->child->sibling)	//如果不为空,说明标识符正确 
+				
+		 } 
+	 } 
+//	if(tokenlist[index].tokentype==CONST)	//如果遇到const类型
+//	{
+//		
+//	 } 
+//	else //不是const类型 
+//	{
+//		if(1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)//如果是数据类型声明
+//		{
+//			if(tokenlist[index+1].tokentype==ID) 
+//			{
+//				syntaxtree q=NULL;	//声明中间指针
+//				q=new syntaxnode;	//为具体形参声明节点申请空间
+//				if(q==NULL)		//判断空间是否申请成功
+//				{
+//					//输出信息 
+//					printf("内存申请失败！\n内存不够，自动关闭\n");
+//					getchar();getchar();	//等待用户响应 
+//					exit(0);
+//				 } 
+//				q->kind=funcparam;  //设置具体形参声明节点的识别码为funcparam
+//				q->child=NULL;		//孩子置空
+//				q->sibling=NULL;	//兄弟置空
+//				q->listindex=index;	//保存tokenlist中的index
+//				T->child=q;			//q为传入形参的孩子节点
+//				index+2;			 
+//				if(tokenlist[index+2].tokentype==COMMA)	//如果标识符后是逗号,说明还有其他形参 
+//					;
+//					
+//			}
+//			else //类型声明后不是标识符,说明形参声明错误
+//			{
+//				printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+//				return ERROR; 
+//			 } 
+//		 }
+//		else //不是数据类型声明
+//		{
+//			printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+//			return ERROR; 
+//		 } 
+//	}
+ } 
+/**************************************************************
+函数功能：处理类型声明,此时传入的索引index理想情况下指向类型声明 
+*************************************************************/ 
+syntaxtree Lexer::TypeSpecifier()			//类型声明处理函数
+{
 	syntaxtree p=NULL;	//声明中间指针
-	p=new syntaxnode;	//为形参具体声明申请空间
+	p=new syntaxnode;	//为类型设明 
 	if(p==NULL)		//判断空间是否申请成功
 	{
 		//输出信息 
 		printf("内存申请失败！\n内存不够，自动关闭\n");
 		getchar();getchar();	//等待用户响应 
 		exit(0);
-	 }  
-	if(tokenlist[index].tokentype==CONST)	//如果遇到const类型
-	{
-		
 	 } 
-	else //不是const类型 
+	p->child=NULL;	//孩子节点初始化
+	p->sibling=NULL;//兄弟节点初始化 
+	if(tokenlist[index].tokentype==CONST&&1<=tokenlist[index+1].tokentype&&tokenlist[index+1].tokentype<6)//如果是const类型正确声明
 	{
-		if(1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)//如果是数据类型声明
-		{
-			if(tokenlist[index+1]==ID) 
-			{
-				syntaxtree q=NULL;	//声明中间指针
-				q=new syntaxnode;	//为具体形参声明节点申请空间
-				if(q==NULL)		//判断空间是否申请成功
-				{
-					//输出信息 
-					printf("内存申请失败！\n内存不够，自动关闭\n");
-					getchar();getchar();	//等待用户响应 
-					exit(0);
-				 } 
-				q->kind=funcparam;  //设置具体形参声明节点的识别码为funcparam
-				q->child=NULL;		//孩子置空
-				q->sibling=NULL;	//兄弟置空
-				q->listindex=index;	//保存tokenlist中的index
-				T->child=q;			//q为传入形参的孩子节点
-				index+2;			 
-				if(tokenlist[index+2]==COMMA)	//如果标识符后是逗号,说明还有其他形参 
-					;
-					
-			}
-			else //类型声明后不是标识符,说明形参声明错误
-			{
-				printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-				return ERROR; 
-			 } 
-		 }
-		else //不是数据类型声明
-		{
-			printf("\nERROR:function parameter declaration error;Located on line No.%d,near %s",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-			return ERROR; 
-		 } 
-	}
+		p->kind=consttype;	//设置该类型声明节点识别码为consttype
+		p->listindex=index;	//保存tokenlist中的索引
+		index=index+2;	//移动到类型声明之后的字符
+		return p;		//返回指针 
+	 } 	//处理const类型声明结束 
+
  } 
 /************************************************
 函数功能：按步长打印空格 
@@ -375,9 +404,30 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("函数形参序列：空"); 
 			break;
 		} 
+		
+		case consttype:{	//处理const类型声明节点
+			PrintSpace(step);//输出前置空格
+			printf("类型声明：%s %s",tokenlist[p->listindex].tokenstring.c_str(),tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		} 
 	 }
   } 
- 
+/******************************************************************
+函数功能：插入p的兄弟节点q
+******************************************************************/
+status Lexer::InsertSibling(syntaxtree& p,syntaxtree& q)
+{
+	p->sibling=q;
+	return OK;
+}
+/****************************************************************
+函数功能：插入p的孩子节点q
+*****************************************************************/
+status Lexer::InsertChild(syntaxtree& p,syntaxtree& q)
+{
+	p->child=q;
+	return OK;
+ } 
  
  
 #endif

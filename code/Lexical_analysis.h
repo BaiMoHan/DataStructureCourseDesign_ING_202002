@@ -27,8 +27,8 @@ typedef struct token{
 
 typedef enum{	//定义语法树的结点类别
 	//根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
-	//外部变量声明,函数定义, 数据类型 
-	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,exvardef,exfuncdef,datatype,
+	//cosnt类型,普通类型,外部变量声明,函数定义, 数据类型 
+	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,consttype,type,exvardef,exfuncdef,datatype,
 }nodekind;
 
 	
@@ -52,8 +52,11 @@ class Lexer	//词法分析类
 		status FunctionDeclaration();	//函数声明处理函数 
 		status ParameterList(syntaxtree& T);//形参序列处理函数 
 		status Parameter(syntaxtree& T);	//形参处理函数 
+		syntaxtree TypeSpecifier();			//类型声明处理函数
+		syntaxtree Identifier();			//标识符处理函数 
 		status FunctionDefine(syntaxtree &T);	//函数定义函数
-
+		status InsertSibling(syntaxtree& p,syntaxtree& q);//插入p的兄弟节点q 
+		status InsertChild(syntaxtree&p,syntaxtree &q);	//插入p的孩子节点q 
 		void PrintNode(syntaxtree p,int step);	//打印树节点p 
 		void PrintTree(syntaxtree& root);	//前序遍历打印树 
 		void DeleteTree(syntaxtree& root);	//释放树空间 
