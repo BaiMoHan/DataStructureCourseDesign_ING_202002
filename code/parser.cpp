@@ -205,41 +205,86 @@ status Lexer::ParameterList(syntaxtree& T)
  	}
  	else //不是右括号,说明应该是形参序列
 	{ 
-		syntaxtree p=NULL;	//声明中间指针
-		p=new syntaxnode;	//为函数形参 
-		if(p==NULL)		//判断空间是否申请成功
+		syntaxtree q=NULL;	//设立中间指针 
+		q=Parameter();		//保存形参处理程序的返回值
+		if(!q)	//说明形参处理失败
+			return ERROR;
+		else 
 		{
-			//输出信息 
-			printf("内存申请失败！\n内存不够，自动关闭\n");
-			getchar();getchar();	//等待用户响应 
-			exit(0);
-		 }  
-		p->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
-		p->child=NULL;		//孩子置空
-		p->sibling=NULL;	//兄弟节点置空
-		T->sibling=p;		//该节点作为传入形参的兄弟节点
-		if(Parameter(p)==OK);			//处理函数形参 
+			syntaxtree t=q;	//保存q当前指向的过渡节点的地址 
+			q=q->sibling;	//剔除掉中间过渡节点
+			delete t;		//释放过渡节点的内存 
+			if(q)		//如果q为真
+			{
+				
+			 } 
+			else
+			{
+				
+			 } 
+		 } 
+//		syntaxtree p=NULL;	//声明中间指针
+//		p=new syntaxnode;	//为函数形参 
+//		if(p==NULL)		//判断空间是否申请成功
+//		{
+//			//输出信息 
+//			printf("内存申请失败！\n内存不够，自动关闭\n");
+//			getchar();getchar();	//等待用户响应 
+//			exit(0);
+//		 }  
+//		p->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
+//		p->child=NULL;		//孩子置空
+//		p->sibling=NULL;	//兄弟节点置空
+//		T->sibling=p;		//该节点作为传入形参的兄弟节点
+//		if(Parameter(p)==NULL);			//处理函数形参 
 	}
 } 
 /*******************************************************
 函数功能：形参处理函数 
 此时index指向的是(的下一位 
 *******************************************************/
-status Lexer::Parameter(syntaxtree &T)
+syntaxtree Lexer::Parameter()
 {
-	if(T->child)	//如果一开始有孩子,说明应该当兄弟节点插入
+	syntaxtree p=new syntaxnode;//设立中间节点p
+	if(p==NULL)		//判断空间是否申请成功
 	{
-	 }
-	else		//第一次插入
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 }  
+	 p->child=NULL;//初始化孩子节点 
+	 p->sibling=NULL;//初始化兄弟节点 
+	syntaxtree q=p;	//保存p的初始地址 
+	while(tokenlist[index].tokentype!=BRACKETR) 	//当不是右括号就说明是形参序列,进行处理 
 	{
-		T->child=TypeSpecifier();//类型声明处理的返回值地址作为形参序列节点的孩子
-		if(T->child)	//如果孩子不为NULL,说明类型声明正确,下面处理标识符
-		{
-			T->child->sibling=Identifier();//标识符的返回值地址作为类型声明的兄弟节点
-			if(T->child->sibling)	//如果不为空,说明标识符正确 
-				
-		 } 
-	 } 
+		p->sibling=TypeSpecifier();	//类型声明节点作为兄弟
+		p=p-sibling;	//p移动到兄弟节点
+		if(p)	//如果类型声明正确
+		{ 
+//			p->sibling=Identifier(); 识别标识符
+			p=p->sibling;	//继续移动到兄弟节点
+			if(p)			//如果标识符正确 
+				Parameter();//递归调用本身,进行下一个形参的处理
+			else			//标识符处理函数返回NULL,说明出现问题 
+			 	return NULL;//返回NULL 
+		} 
+		else  
+			return NULL;	//类型声明识别程序返回NULL，说明形参的类型声明有问题,返回NULL 
+	}
+//	if(T->child)	//如果一开始有孩子,说明应该当兄弟节点插入
+//	{
+//	 }
+//	else		//第一次插入
+//	{
+//		T->child=TypeSpecifier();//类型声明处理的返回值地址作为形参序列节点的孩子
+//		if(T->child)	//如果孩子不为NULL,说明类型声明正确,下面处理标识符
+//		{
+//			T->child->sibling=Identifier();//标识符的返回值地址作为类型声明的兄弟节点
+//			if(T->child->sibling)	//如果不为空,说明标识符正确 
+//				
+//		 } 
+//	 } 
 //	if(tokenlist[index].tokentype==CONST)	//如果遇到const类型
 //	{
 //		

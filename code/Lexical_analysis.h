@@ -5,7 +5,7 @@
 #define MAXINDEX 100	//数组最大容量 
 #define status int		//定义函数返回值 
 #define ERROR -1		//定义错误值 
-#define OK 1 			//定义正确值 
+#define OK 1			//定义正确值 
 
 
 using namespace std;	//使用标准命名空间 
@@ -51,7 +51,7 @@ class Lexer	//词法分析类
 		status VarDeclaration(syntaxtree &T);	//外部变量声明处理函数 
 		status FunctionDeclaration();	//函数声明处理函数 
 		status ParameterList(syntaxtree& T);//形参序列处理函数 
-		status Parameter(syntaxtree& T);	//形参处理函数 
+		syntaxtree Parameter(syntaxtree& T);	//形参处理函数 
 		syntaxtree TypeSpecifier();			//类型声明处理函数
 		syntaxtree Identifier();			//标识符处理函数 
 		status FunctionDefine(syntaxtree &T);	//函数定义函数
