@@ -106,7 +106,12 @@ status Lexer::DeclarationList()	//声明序列语法分析
 			{
 				if(FunctionDeclaration()==OK)	//如果函数声明分析程序返回正确值
 				{
-					DeclarationList();
+					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
+						return ERROR;
+				 } 
+				else		//函数声明分析程序返回错误值
+				{
+					return ERROR;	//出现语法错误,声明序列返回ERROR 
 				 } 
 			 }
 			else	//那么就是函数定义,调用函数定义处理函数 
@@ -216,11 +221,14 @@ status Lexer::ParameterList(syntaxtree& T)
 			delete t;		//释放过渡节点的内存 
 			if(q)		//如果q为真
 			{
-				
+			q->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
+			q->child=NULL;		//孩子置空
+			q->sibling=NULL;	//兄弟节点置空
+			T->sibling=q;		//该节点作为传入形参的兄弟节点
 			 } 
-			else
+			else	//q为假说明,形参出现了错误 
 			{
-				
+				return ERROR;	//返回错误值 
 			 } 
 		 } 
 //		syntaxtree p=NULL;	//声明中间指针
@@ -372,6 +380,7 @@ syntaxtree Lexer::TypeSpecifier()			//类型声明处理函数
 		DeleteTree(root->sibling);	//释放右子树sibling结点
 		delete root;				//释放根结点 
 	 } 
+	 root=NULL;		//只是释放了内存空间,指针不变,将根指针指向NULL 
 	 return ; 
  } 
 /******************************************************************************
