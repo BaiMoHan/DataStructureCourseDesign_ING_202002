@@ -263,17 +263,24 @@ syntaxtree Lexer::Parameter()
 	 }  
 	 p->child=NULL;//初始化孩子节点 
 	 p->sibling=NULL;//初始化兄弟节点 
+	 p->kind=temp; 
 	syntaxtree q=p;	//保存p的初始地址 
 	while(tokenlist[index].tokentype!=BRACKETR) 	//当不是右括号就说明是形参序列,进行处理 
 	{
 		p->sibling=TypeSpecifier();	//类型声明节点作为兄弟
-		p=p-sibling;	//p移动到兄弟节点
+		p=p->sibling;	//p移动到兄弟节点
 		if(p)	//如果类型声明正确
 		{ 
 //			p->sibling=Identifier(); 识别标识符
 			p=p->sibling;	//继续移动到兄弟节点
 			if(p)			//如果标识符正确 
-				Parameter();//递归调用本身,进行下一个形参的处理
+			{
+				p->sibling=Parameter();//递归调用本身,进行下一个形参的处理
+				if(p->sibling)
+					return q;	//返回最初节点的地址 
+				else			//递归调用自身返回NULL,说明出现错误 
+					return NULL; 
+			}
 			else			//标识符处理函数返回NULL,说明出现问题 
 			 	return NULL;//返回NULL 
 		} 
