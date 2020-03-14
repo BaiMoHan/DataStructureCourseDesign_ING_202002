@@ -37,3 +37,10 @@ This is my data structure course design in Huazhong University of Science and Te
 20. Find the bug at PrintTree()
 21. Rewrite function PrintTree()
 22. Finish FunctionDeclaration()
+23. Function Declaration 1.0
+24. Add function ParameterList()  Parameter() 1.0
+25. Add function InsertSibling() InsertChild()
+26. Rewrite ParameterList()
+27. Add flowchart of Program DeclarationList()
+28. Rewrite Parameter()
+29. Add readme.md in Chinese

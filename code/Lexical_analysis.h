@@ -27,8 +27,8 @@ typedef struct token{
 
 typedef enum{	//定义语法树的结点类别
 	//过渡节点,根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
-	//cosnt类型,普通类型,外部变量声明,函数定义, 数据类型 
-	temp,rt,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,consttype,type,exvardef,exfuncdef,datatype,
+	//cosnt类型,普通类型,标识符变量名,外部变量声明,函数定义, 数据类型 
+	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,consttype,type,id,exvardef,exfuncdef,datatype,
 }nodekind;
 
 	
