@@ -16,7 +16,7 @@ Lexer::Lexer()
 	vectorindex=0;	//初始化tokenlist索引 
 	state=0;		//自动机初始状态 
 	DFAflag=1;		//初始化DFA分析标记为成功标记1
-	
+	errorflag=0;	//初始化语法树分析错误标志为0 
 	//提示用户输入文件名 
 	printf("请输入要分析的源程序文件名(不超过30个字符),filename=");
 	//读取用户输入的文件名 

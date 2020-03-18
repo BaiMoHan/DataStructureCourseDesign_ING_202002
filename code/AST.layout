@@ -1,7 +1,7 @@
 [Editor_0]
-CursorCol=6
-CursorRow=31
-TopLine=15
+CursorCol=8
+CursorRow=30
+TopLine=21
 LeftChar=1
 [Editors]
 Order=0,1,2,3
@@ -12,9 +12,9 @@ CursorRow=11
 TopLine=1
 LeftChar=1
 [Editor_1]
-CursorCol=7
-CursorRow=232
-TopLine=691
+CursorCol=44
+CursorRow=19
+TopLine=1
 LeftChar=1
 [Editor_2]
 CursorCol=1
@@ -22,7 +22,7 @@ CursorRow=10
 TopLine=1
 LeftChar=1
 [Editor_3]
-CursorCol=51
-CursorRow=342
-TopLine=305
+CursorCol=47
+CursorRow=234
+TopLine=214
 LeftChar=1

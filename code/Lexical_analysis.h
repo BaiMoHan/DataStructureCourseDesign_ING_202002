@@ -27,8 +27,8 @@ typedef struct token{
 
 typedef enum{	//定义语法树的结点类别
 	//过渡节点,根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
-	//cosnt类型,普通类型,标识符变量名,外部变量声明,函数定义, 数据类型 
-	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,consttype,type,id,exvardef,exfuncdef,datatype,
+	//数据类型,标识符变量名,外部变量声明,函数定义, 数据类型 
+	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,type,id,exvardef,exfuncdef,datatype,
 }nodekind;
 
 	
@@ -66,7 +66,8 @@ class Lexer	//词法分析类
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
 		TokenType gettokentype(string str);//获取字符串的标识符 
 		int state;				//词法分析状态 
-		int DFAflag;			//DFA有限自动机分析情况标志 
+		int DFAflag;			//DFA有限自动机分析情况标志
+		int errorflag;			//语法树错误标志 
 		char filename[30];		//测试文件名 
 		int  linecount;			//行号计数器
 		vector<token> tokenlist;//存放自动机识别出来的词

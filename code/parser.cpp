@@ -166,6 +166,8 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	q->listindex=index++;	//保存tokenlist中索引
 	q->child=NULL;			//函数返回值类型节点无孩子
 	p->child=q;				//函数返回值类型节点是外部函数声明节点的孩子
+	if(tokenlist[index].tokentype!=ID)	//如果类型之后不是标识符
+		return ERROR;	//返回错误值 
 	p=new syntaxnode;		//为函数名节点申请空间
 	if(p==NULL)		//判断空间是否申请成功
 	{
@@ -183,6 +185,8 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	{
 		return OK; 
 	}
+	else		//函数返回错误值 
+		return ERROR; //返回错误值 
  }
 
 /***************************************************
@@ -212,39 +216,32 @@ status Lexer::ParameterList(syntaxtree& T)
 	{ 
 		syntaxtree q=NULL;	//设立中间指针 
 		q=Parameter();		//保存形参处理程序的返回值
-		if(!q)	//说明形参处理失败
-			return ERROR;
+		if(errorflag) 	//如果错误标记位制置1
+			return ERROR;	//说明形参处理出现了错误，返回错误值 
+		syntaxtree p=new syntaxnode;//为函数形参序列节点申请空间
+		if(p==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		if(!q)	//说明形参为空
+		{
+			p->kind=nonfuncparam;//设置形参序列节点类型识别码为nonfuncparam
+			p->child=NULL;	//其孩子节点设为NULL
+			p->sibling=NULL;//其兄弟节点设为NULL
+			T->sibling=p;	//该节点为传入形参的兄弟节点 
+			return OK;
+		 } 
 		else 
 		{
-			syntaxtree t=q;	//保存q当前指向的过渡节点的地址 
-			q=q->sibling;	//剔除掉中间过渡节点
-			delete t;		//释放过渡节点的内存 
-			if(q)		//如果q为真
-			{
-			q->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
-			q->child=NULL;		//孩子置空
-			q->sibling=NULL;	//兄弟节点置空
-			T->sibling=q;		//该节点作为传入形参的兄弟节点
-			 } 
-			else	//q为假说明,形参出现了错误 
-			{
-				return ERROR;	//返回错误值 
-			 } 
-		 } 
-//		syntaxtree p=NULL;	//声明中间指针
-//		p=new syntaxnode;	//为函数形参 
-//		if(p==NULL)		//判断空间是否申请成功
-//		{
-//			//输出信息 
-//			printf("内存申请失败！\n内存不够，自动关闭\n");
-//			getchar();getchar();	//等待用户响应 
-//			exit(0);
-//		 }  
-//		p->kind=funcparam;	//设置函数形参序列节点的识别码为funcparam
-//		p->child=NULL;		//孩子置空
-//		p->sibling=NULL;	//兄弟节点置空
-//		T->sibling=p;		//该节点作为传入形参的兄弟节点
-//		if(Parameter(p)==NULL);			//处理函数形参 
+			p->kind=funcparam;//设置形参序列节点类型识别码为funcparam
+			p->child=q;	//其孩子节点设为q
+			p->sibling=NULL;//其兄弟节点设为NULL
+			T->sibling=p;	//该节点为传入形参的兄弟节点 
+			return OK;
+		 }  
 	}
 } 
 /*******************************************************
@@ -253,33 +250,28 @@ status Lexer::ParameterList(syntaxtree& T)
 *******************************************************/
 syntaxtree Lexer::Parameter()
 {
-//	syntaxtree p=new syntaxnode;//设立中间节点p
-//	if(p==NULL)		//判断空间是否申请成功
-//	{
-//		//输出信息 
-//		printf("内存申请失败！\n内存不够，自动关闭\n");
-//		getchar();getchar();	//等待用户响应 
-//		exit(0);
-//	 }  
-//	 p->child=NULL;//初始化孩子节点 
-//	 p->sibling=NULL;//初始化兄弟节点 
-//	 p->kind=temp; 
-//	syntaxtree q=p;	//保存p的初始地址 
 	while(tokenlist[index].tokentype!=BRACKETR) 	//当不是右括号就说明是形参序列,进行处理 
 	{
 		syntaxtree p=NULL;//声明中间指针p 
 		p=TypeSpecifier();	//类型声明节点作为兄弟
 		syntaxtree q=p;		//保存类型声明节点作为返回值 
 //		p=p->sibling;	//p移动到兄弟节点
+		if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
+			index++;	//索引自增
+		else	//不是逗号就是形式错误 
+		{
+			DeleteTree(root);//释放树空间 
+			return NULL; //返回NULL 
+		} 
 		if(p)	//如果类型声明正确,则P不为NULL 
 		{ 
-			if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
-				index++;	//索引自增
-			else	//不是逗号就是形式错误 
-			{
-				DeleteTree(root);//释放树空间 
-				return NULL; //返回NULL 
-			 } 
+//			if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
+//				index++;	//索引自增
+//			else	//不是逗号就是形式错误 
+//			{
+//				DeleteTree(root);//释放树空间 
+//				return NULL; //返回NULL 
+//			 } 
 			p->sibling=Identifier(); //识别标识符
 			if(p->sibling)
 			{
@@ -313,14 +305,11 @@ syntaxtree Lexer::TypeSpecifier()			//类型声明处理函数
 	 } 
 	p->child=NULL;	//孩子节点初始化
 	p->sibling=NULL;//兄弟节点初始化 
-	if(tokenlist[index].tokentype==CONST&&1<=tokenlist[index+1].tokentype&&tokenlist[index+1].tokentype<6)//如果是const类型正确声明
+	if(tokenlist[index].tokentype==CONST)//如果是const类型正确声明
 	{
-		p->kind=consttype;	//设置该类型声明节点识别码为consttype
-		p->listindex=index;	//保存tokenlist中的索引
-		index=index+2;	//移动到类型声明之后的字符
-		return p;		//返回指针 
+		index++; //移动到下一位词 
 	 } 	//处理const类型声明结束 
-	else if(1<=tokenlist[index+1].tokentype&&tokenlist[index+1].tokentype<6)//如果是普通类型声明
+	if(1<=tokenlist[index+1].tokentype&&tokenlist[index+1].tokentype<6)//如果是普通类型声明
 	{
 		p->kind=type;	//设置类型节点识别码为type
 		p->listindex=index;	//保存在tokenlist中的索引
@@ -330,7 +319,7 @@ syntaxtree Lexer::TypeSpecifier()			//类型声明处理函数
 	else		//不满足以上两种情况,则是错误的类型声明
 	{
 		printf("Error:wrong typespecifier;Locatede on line No.%d,near character '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-		DeleteTree(root);
+		errorflag=1;	//设置错误标志为1 
 		return NULL;	//返回NULL 
 	 } 
  } 
@@ -367,7 +356,7 @@ syntaxtree Lexer::Identifier()
 	else	//不是标识符就是错误 
 	{
 		printf("Error:expected an Identifier;Located on line No.%d;near characters'%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-		DeleteTree(root);	//释放树内存空间 
+		errorflag=1;//设置错误标记为1 
 		return NULL;	//返回NULL 
 	}
  } 
@@ -465,15 +454,24 @@ void Lexer::PrintTree(syntaxtree& root)
 			break;
 		}
 	   
-	    case nonfuncparam:{	//处理空形参节点
+	    case nonfuncparam:{	//处理空形参序列节点
 			PrintSpace(step);//输出前置空格
 			printf("函数形参序列：空"); 
 			break;
 		} 
 		
-		case consttype:{	//处理const类型声明节点
+	    case funcparam:{	//处理非空形参序列节点
 			PrintSpace(step);//输出前置空格
-			printf("类型声明：%s %s",tokenlist[p->listindex].tokenstring.c_str(),tokenlist[p->listindex].tokenstring.c_str()); 
+			printf("函数形参序列："); 
+			break;
+		} 
+		
+		case type:{	//处理数据类型声明节点
+			PrintSpace(step);//输出前置空格
+			if(tokenlist[p->listindex-1].tokentype==CONST)//如果前一位有const 
+				printf("类型声明：const %s",tokenlist[p->listindex].tokenstring.c_str()); 
+			else	//前一位不是const 
+				printf("类型声明：%s",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		} 
 	 }
