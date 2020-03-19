@@ -256,13 +256,13 @@ syntaxtree Lexer::Parameter()
 		p=TypeSpecifier();	//类型声明节点作为兄弟
 		syntaxtree q=p;		//保存类型声明节点作为返回值 
 //		p=p->sibling;	//p移动到兄弟节点
-		if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
-			index++;	//索引自增
-		else	//不是逗号就是形式错误 
-		{
-			DeleteTree(root);//释放树空间 
-			return NULL; //返回NULL 
-		} 
+//		if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
+//			index++;	//索引自增
+//		else	//不是逗号就是形式错误 
+//		{
+//			DeleteTree(root);//释放树空间 
+//			return NULL; //返回NULL 
+//		} 
 		if(p)	//如果类型声明正确,则P不为NULL 
 		{ 
 //			if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
@@ -275,7 +275,7 @@ syntaxtree Lexer::Parameter()
 			p->sibling=Identifier(); //识别标识符
 			if(p->sibling)
 			{
-				p->sibling=Parameter();//递归调用自身 
+				p->sibling->sibling=Parameter();//递归调用自身 
 				return q;	//返回最初节点的地址 
 			} 
 			else			//递归调用自身返回NULL,说明出现错误 
@@ -309,7 +309,7 @@ syntaxtree Lexer::TypeSpecifier()			//类型声明处理函数
 	{
 		index++; //移动到下一位词 
 	 } 	//处理const类型声明结束 
-	if(1<=tokenlist[index+1].tokentype&&tokenlist[index+1].tokentype<6)//如果是普通类型声明
+	if(1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<6)//如果是普通类型声明
 	{
 		p->kind=type;	//设置类型节点识别码为type
 		p->listindex=index;	//保存在tokenlist中的索引
@@ -472,6 +472,12 @@ void Lexer::PrintTree(syntaxtree& root)
 				printf("类型声明：const %s",tokenlist[p->listindex].tokenstring.c_str()); 
 			else	//前一位不是const 
 				printf("类型声明：%s",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		} 
+		
+		case id:{	//处理标识符类型声明节点
+			PrintSpace(step);//输出前置空格
+			printf("变量名：%s",tokenlist[p->listindex].tokenstring.c_str());
 			break;
 		} 
 	 }
