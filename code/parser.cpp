@@ -71,6 +71,10 @@ status Lexer::Program()	//程序语法分析函数开始
 	{
 		printf("\n\n语法分析成功\n"); 
 	}
+	else{
+		DeleteTree(root);
+		printf("\n遇到语法树分析错误，已经释放语法树内存空间完毕！\n"); 
+	} 
 	 
 //	 PrintTree(root); 
   
@@ -108,6 +112,8 @@ status Lexer::DeclarationList()	//声明序列语法分析
 				{
 					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
 						return ERROR;
+					else
+						return OK;
 				 } 
 				else		//函数声明分析程序返回错误值
 				{
@@ -255,27 +261,15 @@ syntaxtree Lexer::Parameter()
 		syntaxtree p=NULL;//声明中间指针p 
 		p=TypeSpecifier();	//类型声明节点作为兄弟
 		syntaxtree q=p;		//保存类型声明节点作为返回值 
-//		p=p->sibling;	//p移动到兄弟节点
-//		if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
-//			index++;	//索引自增
-//		else	//不是逗号就是形式错误 
-//		{
-//			DeleteTree(root);//释放树空间 
-//			return NULL; //返回NULL 
-//		} 
 		if(p)	//如果类型声明正确,则P不为NULL 
 		{ 
-//			if(tokenlist[index].tokentype==COMMA)	//如果是逗号 
-//				index++;	//索引自增
-//			else	//不是逗号就是形式错误 
-//			{
-//				DeleteTree(root);//释放树空间 
-//				return NULL; //返回NULL 
-//			 } 
 			p->sibling=Identifier(); //识别标识符
 			if(p->sibling)
 			{
-				p->sibling->sibling=Parameter();//递归调用自身 
+				if(tokenlist[index].tokentype==COMMA)	//如果遇到逗号,说明有后续的形参 
+					index++;	//逗号过滤 
+				p->sibling->sibling=Parameter();//递归调用自身
+				
 				return q;	//返回最初节点的地址 
 			} 
 			else			//递归调用自身返回NULL,说明出现错误 
@@ -351,7 +345,6 @@ syntaxtree Lexer::Identifier()
 			index++;	//索引自增
 			return p;		//返回该节点地址 
 		}
-
 	 } 
 	else	//不是标识符就是错误 
 	{
@@ -381,7 +374,7 @@ syntaxtree Lexer::Identifier()
 		delete root;				//释放根结点 
 	 } 
 	 root=NULL;		//只是释放了内存空间,指针不变,将根指针指向NULL
-	 printf("\n遇到语法树分析错误，已经释放语法树内存空间完毕！\n"); 
+//	 printf("\n遇到语法树分析错误，已经释放语法树内存空间完毕！\n"); 
 	 return ; 
  } 
 /******************************************************************************
