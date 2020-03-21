@@ -2,4 +2,4 @@
 #include<stdio.h>
 #include<ioman.p>
 #include<iostream>
-int func();
+int func(int a, int v, int array[][][],double array1[],   char c,float k);

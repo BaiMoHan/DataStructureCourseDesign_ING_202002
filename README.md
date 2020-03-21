@@ -44,3 +44,8 @@ This is my data structure course design in Huazhong University of Science and Te
 27. Add flowchart of Program DeclarationList()
 28. Rewrite Parameter()
 29. Add readme.md in Chinese
+30. Add functions including Parameter() TypeSpecifier() Identifier()
+31. Rewrite TypeSpecifier()
+32. Parameter identifying 1.0 without array
+33. Identifier bug remove
+34. FunctionDeclaration() end 
