@@ -932,7 +932,7 @@ void Lexer::analysis(char filename[])
 	}	//end of while(ch!=EOF)
 	t.linenum=linecount+1;	//结束时换到下一行
 	t.times=0;				//结束标记不需要记录
-	t.tokenstring=ENDFILE;	//结束类型
+	t.tokentype=ENDFILE;	//结束类型
 	str='\0';				//结束字符
 	t.tokenstring=str;		//加入结束字符 
 	tokenlist.push_back(t);	//加入tokenlist中去作为程序终止 

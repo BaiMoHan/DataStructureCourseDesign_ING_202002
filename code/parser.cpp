@@ -110,6 +110,7 @@ status Lexer::DeclarationList()	//声明序列语法分析
 			{
 				if(FunctionDeclaration()==OK)	//如果函数声明分析程序返回正确值
 				{
+					index=index+2;	//索引自增 
 					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
 						return ERROR;
 					else
@@ -124,16 +125,25 @@ status Lexer::DeclarationList()	//声明序列语法分析
 			{
 				
 			}
-		 } 
-		else if(tokenlist[index+2].tokentype==SEMI)	//如果类型声明之后的第二个串（标识符）之后的是分号,变量声明 
+		 } //处理外部函数定义与外部函数声明结束 
+		else //其他情况只可能是外部变量的声明 
 		{
-			
-		 } 
+			if(ExVarDeclaration()==OK)	//如果外部变量函数声明函数返回正确值
+			{
+				if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
+					return ERROR;
+				else
+					return OK;
+			 } 
+			else	//外部变量声明错误
+				return ERROR;	//返回错误值 
+		 } //处理外部变量声明结束 
 	}	//处理类型声明结束
 	
-	else 
+	else //不合法语句 
 	{
-		
+		printf("\nERROR:Expecter correct statements;\nLocated on No.%d,near character '%s';\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return ERROR;	//返回错误值 
 	}	
 	
  } 
@@ -324,56 +334,80 @@ syntaxtree Lexer::Identifier(int state)
 {
 	if(tokenlist[index].tokentype==ID)	//如果是标识符
 	{
-			syntaxtree p=new syntaxnode;	//为类型设明 
-			if(p==NULL)		//判断空间是否申请成功
+		syntaxtree p=new syntaxnode;	//为类型设明 
+		if(p==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		p->kind=id;		//设置节点类型为id 标识符变量名 
+		p->child=NULL;	//孩子节点置空
+		p->sibling=NULL;//兄弟节点置空
+		p->listindex=index;//保存在tokenlist中的索引
+		index++;	//索引自增
+		if(tokenlist[index].tokentype==PML)	//判断是否是遇到数组
+		{
+			if(state)	//处理函数内形参数组类型
 			{
-				//输出信息 
+				int level=0;	//记录数组的维数 
+				do{
+					 index++;	//索引自增
+					 if(tokenlist[index].tokentype!=PMR)
+					{
+						errorflag=1;//设置错误标记
+						printf("\nError:expected correct array parameter define;\nLocated on line No.%d;near characters'%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+						return NULL;//返回NULL						 
+					 } 
+					index++; //索引自增 
+					level++;//维数自增 
+				}while(tokenlist[index].tokentype==PML);//遇到不是[退出循环 
+				p->sibling=new syntaxnode;//为数组节点申请空间
+				if(p->sibling==NULL) //判断空间是否申请成功
+				{
+					//输出信息 
 				printf("内存申请失败！\n内存不够，自动关闭\n");
 				getchar();getchar();	//等待用户响应 
 				exit(0);
+			 	}  
+			 	p->sibling->child=NULL;//初始化孩子节点
+				p->sibling->sibling=NULL;//初始化 
+				p->sibling->listindex=level;//保存数组的维数 
+				p->sibling->kind=array;//设置节点的识别码为array 
+				return p; 
 			 } 
-			p->kind=id;		//设置节点类型为id 标识符变量名 
-			p->child=NULL;	//孩子节点置空
-			p->sibling=NULL;//兄弟节点置空
-			p->listindex=index;//保存在tokenlist中的索引
-			index++;	//索引自增
-			if(tokenlist[index].tokentype==PML)	//判断是否是遇到数组
+			else	//非函数形参数组
 			{
-				if(state)	//处理函数内形参数组类型
-				{
-					int level=0;	//记录数组的维数 
-					do{
-						 index++;	//索引自增
-						 if(tokenlist[index].tokentype!=PMR)
-						{
-							errorflag=1;//设置错误标记
-							printf("\nError:expected correct array parameter define;\nLocated on line No.%d;near characters'%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
-							return NULL;//返回NULL						 
-						 } 
-						index++; //索引自增 
-						level++;//维数自增 
-					}while(tokenlist[index].tokentype==PML);//遇到不是[退出循环 
-					p->sibling=new syntaxnode;//为数组节点申请空间
-					if(p->sibling==NULL) //判断空间是否申请成功
+				int level=0;	//记录数组的维数
+				do{
+					 index++;	//索引自增
+					 if(tokenlist[index].tokentype!=PMR)
 					{
-						//输出信息 
-					printf("内存申请失败！\n内存不够，自动关闭\n");
-					getchar();getchar();	//等待用户响应 
-					exit(0);
-				 	}  
-				 	p->sibling->child=NULL;//初始化孩子节点
-					p->sibling->sibling=NULL;//初始化 
-					p->sibling->listindex=level;//保存数组的维数 
-					p->sibling->kind=array;//设置节点的识别码为array 
-					return p; 
-				 } 
-				else	//非函数形参数组
+						errorflag=1;//设置错误标记
+						printf("\nError:expected correct array parameter define;\nLocated on line No.%d;near characters'%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+						return NULL;//返回NULL						 
+					 } 
+					index=index+2; //索引自增 
+					level++;//维数自增 
+				}while(tokenlist[index].tokentype==PML);//遇到不是[退出循环 
+				p->sibling=new syntaxnode;//为数组节点申请空间
+				if(p->sibling==NULL) //判断空间是否申请成功
 				{
-					
-				 } 
-			}
-			return p;		//返回该节点地址 
+					//输出信息 
+				printf("内存申请失败！\n内存不够，自动关闭\n");
+				getchar();getchar();	//等待用户响应 
+				exit(0);
+			 	}  
+			 	p->sibling->child=NULL;//初始化孩子节点
+				p->sibling->sibling=NULL;//初始化 
+				p->sibling->listindex=level;//保存数组的维数 
+				p->sibling->kind=array;//设置节点的识别码为array 
+				return p;  
+			 } 
 		}
+		return p;		//返回该节点地址 
+	}
 	  
 	else	//不是标识符就是错误 
 	{
@@ -382,8 +416,51 @@ syntaxtree Lexer::Identifier(int state)
 		return NULL;	//返回NULL 
 	}
  } 
+/****************************************************
+函数功能：外部变量处理
+******************************************************/
+status Lexer::ExVarDeclaration()
+{
+	syntaxtree 	T=root->child;	//中间指针p指向根节点的孩子 
+	while(T&&T->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
+	{
+		T=T->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
+	 } 
+ 	syntaxtree p=new syntaxnode;	//外部变量声明节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->kind=exvardecla;	//该节点的标识码设定唯exfuncdecla
+	p->sibling=NULL;		//兄弟节点设为NULL
+//	p->child=NULL;			//孩子节点设为空 
+	T->sibling=p;			//p节点作为形参T的兄弟节点 
+	p->child=TypeSpecifier();//调用类型处理函数 
+	syntaxtree q=p->child;	//设置中间过渡指针 
+	do{
+		while(q&&q->sibling)	//找到最后一个兄弟节点
+			q=q->sibling;		//移动到下一个兄弟节点 
+		q->sibling=Identifier(0);//调用标识符处理函数
+		if(q->sibling==NULL)	//如果标识符处理函数为NULL 
+			return ERROR;	//返回错误值		 
+	}while(tokenlist[index].tokentype==COMMA);//有逗号,说明是多变量声明 
+	if(tokenlist[index].tokentype==SEMI)	//如果退出后的词恰好是分号
+	{
+		index++;	//索引自增
+		return OK;	//返回正确值 
+	 } 
+	else
+	{
+		printf("\nError:Expected ';' after var declaration;Located on line No.%d;\nnear character '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return ERROR;
+	 } 
+
+ } 
 /************************************************
-函数功能：按步长打印空格 
+函数功能：按步长打印空格
 ************************************************/ 
  void PrintSpace(int step)	//按步长打印空格
 {
@@ -503,10 +580,15 @@ void Lexer::PrintTree(syntaxtree& root)
 		} 
 		
 		case array:{	//处理数组类型节点
-//			PrintSpace(step);//输出前置空格
 			printf(" %d维数组",p->listindex);//输出数组的维数 
 			break;
 		} 
+		
+		case exvardecla:{	//处理外部变量声明节点
+			PrintSpace(step);//输出前置空格
+			printf("外部变量声明节点："); 
+			break;
+		}
 	 }
   } 
 /******************************************************************
