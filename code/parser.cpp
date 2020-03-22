@@ -140,6 +140,14 @@ status Lexer::DeclarationList()	//声明序列语法分析
 		 } //处理外部变量声明结束 
 	}	//处理类型声明结束
 	
+	else if(tokenlist[index].tokentype==COMMENT)
+	{
+		index++;
+		if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
+			return ERROR;
+		else
+			return OK;
+	 } 	
 	else //不合法语句 
 	{
 		printf("\nERROR:Expecter correct statements;\nLocated on No.%d,near character '%s';\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
