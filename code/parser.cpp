@@ -349,6 +349,7 @@ syntaxtree Lexer::LocalVar()
 					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 					return NULL; 
 				 } 
+				 p=p->sibling;	//移动到兄弟节点 
 				 index++;
 			 }
 		}
@@ -371,6 +372,7 @@ syntaxtree Lexer::LocalVar()
 					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 					return NULL; 
 				 } 
+				p=p->sibling;
 				index++;
 			}
 		 } 
