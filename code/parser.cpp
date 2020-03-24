@@ -101,7 +101,7 @@ status Lexer::DeclarationList()	//声明序列语法分析
 		if(tokenlist[index+2].tokentype==BRACKETL)		//如果类型声明之后第二个串是左括号,说明是外部函数相关的
 		{
 			int i=index;	//中间循环变量 
-			while(tokenlist[i].tokentype!=SEMI)		//找分号
+			while(tokenlist[i].tokentype!=SEMI&&tokenlist[i].tokentype!=ENDFILE)		//找分号
 			{
 				i++;
 			 } 
@@ -123,7 +123,15 @@ status Lexer::DeclarationList()	//声明序列语法分析
 			 }
 			else	//那么就是函数定义,调用函数定义处理函数 
 			{
-				
+				if(FunctionDefine()==OK)
+				{
+					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
+						return ERROR;
+					else
+						return OK;
+				 } 
+				else		//函数定义处理函数遇到错误
+					return ERROR; 
 			}
 		 } //处理外部函数定义与外部函数声明结束 
 		else //其他情况只可能是外部变量的声明 
@@ -212,7 +220,36 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	else		//函数返回错误值 
 		return ERROR; //返回错误值 
  }
-
+/***************************************************
+函数功能：处理函数定义
+***************************************************/
+status Lexer::FunctionDefine()
+{
+	if(FunctionDeclaration()==OK)	//调用函数声明函数 
+	{
+		syntaxtree 	T=root->child;	//中间指针p指向根节点的孩子 
+		while(T&&T->sibling)	//如果根节点有孩子,且兄弟节点不为NULL 
+		{
+			T=T->sibling;	//p指向该兄弟节点,一直找到最后一个兄弟节点为止 
+		 } 
+		T->kind=funcdef;	//更改函数节点类型识别码为funcdefine
+		index++;	//调用FunctionDeclaration()后index指向的是）
+		if(tokenlist[index].tokentype==LP)
+		{
+			index++;
+			if(tokenlist[index].tokentype==RP)
+			{
+				index++;
+				return OK;
+			 } 
+			else
+				return ERROR;
+		 } 
+		 return ERROR;
+	}
+	else
+		return ERROR;
+ } 
 /***************************************************
 函数功能：处理函数形参序列 
 ****************************************************/
@@ -597,6 +634,12 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("外部变量声明节点："); 
 			break;
 		}
+		
+		case funcdef:{	//处理函数定义节点
+			PrintSpace(step);	//输出前置空格
+			printf("函数定义节点："); 
+			break;
+		} 
 	 }
   } 
 /******************************************************************
