@@ -158,7 +158,7 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	 } 	
 	else //不合法语句 
 	{
-		printf("\nERROR:Expecter correct statements;\nLocated on No.%d,near character '%s';\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		printf("\nERROR:Expected correct statements;\nLocated on No.%d,near character '%s';\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 		return ERROR;	//返回错误值 
 	}	
 	
@@ -237,6 +237,12 @@ status Lexer::FunctionDefine()
 		if(tokenlist[index].tokentype==LP)
 		{
 			index++;
+			T=T->child;	//移到下一层语法树
+			while(T&&T->sibling)	//找到该层最后的兄弟节点
+			{
+				T=T->sibling;		//移动到下一个兄弟节点 
+			 } 
+			 T->sibling=CompoundStmd();
 			if(tokenlist[index].tokentype==RP)
 			{
 				index++;
@@ -245,10 +251,131 @@ status Lexer::FunctionDefine()
 			else
 				return ERROR;
 		 } 
-		 return ERROR;
+		else	//不是花括号
+		{
+			return ERROR;
+		 } 
 	}
 	else
 		return ERROR;
+ } 
+/*************************************************
+函数功能：复合语句处理
+************************************************/
+syntaxtree Lexer::CompoundStmd()
+{
+	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点 
+	p->sibling=NULL; //初始化兄弟节点
+	p->kind=compstmd;//设置节点识别码为compstmd 
+	if((1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)||tokenlist[index].tokentype==CONST)
+	{
+		p->child=LocalVar();
+		if(errorflag)
+			return NULL;
+		else
+			return p;
+	}	
+ } 
+/*************************************************
+函数功能：语句序列处理函数
+*************************************************/
+syntaxtree Lexer::StatementList()
+{
+	
+ } 
+/***************************************************
+函数功能：语句处理函数
+***************************************************/
+syntaxtree Lexer::Statement()
+{
+	
+ } 
+/*************************************************
+函数功能：表达式处理函数
+***************************************************/
+syntaxtree Lexer::Expression()
+{
+	
+ } 
+/************************************************
+函数功能：处理函数内的局部变量声明
+**********************************************/
+syntaxtree Lexer::LocalVar()
+{
+	syntaxtree p=new syntaxnode;//为局部变量节点申请空间 
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点
+	p->sibling=NULL;//初始化兄弟节点
+	p->kind=locvardecla;//设置节点的类型识别码为locvardecla 
+	syntaxtree q=p;		//保存初始p的地址 
+	while((1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)||tokenlist[index].tokentype==CONST)
+	{
+		if(tokenlist[index].tokentype==CONST)	//如果是const 
+			index++; 	//索引自增
+		if(p->kind==id||p->kind==array)	//如果节点类型是标识符或者数组 
+		{
+			while(p->sibling)	//找到最后一个兄弟节点 
+			{
+				p=p->sibling;//移动到下一个兄弟节点 
+			}
+			p->sibling=TypeSpecifier();//调用类型声明处理函数
+			if(p->sibling==NULL) //处理类型声明错误 
+			{
+				return NULL;
+			}
+			else
+			{
+				p=p->sibling;//移动到下一个兄弟节点 
+				p->sibling=Identifier(1);//调用标识符处理函数 
+				if(p->sibling==NULL)
+					return NULL ;
+				else if(tokenlist[index].tokentype!=SEMI)	//判断是否有分号
+				{
+					errorflag=1;
+					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+					return NULL; 
+				 } 
+				 index++;
+			 }
+		}
+		else	//第一次处理局部变量
+		{
+			p->child=TypeSpecifier();//调用类型声明处理函数
+			if(p->child==NULL) //处理类型声明错误 
+			{
+				return NULL;
+			}
+			else
+			{
+				p=p->child; 
+				p->sibling=Identifier(1);//调用标识符处理函数 
+				if(p->sibling==NULL)
+					return NULL ;
+				else if(tokenlist[index].tokentype!=SEMI)	//判断是否有分号
+				{
+					errorflag=1;
+					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+					return NULL; 
+				 } 
+				index++;
+			}
+		 } 
+	}//end of while
+	return q;	//返回初始地址q 
  } 
 /***************************************************
 函数功能：处理函数形参序列 
@@ -481,7 +608,6 @@ status Lexer::ExVarDeclaration()
 	 } 
 	p->kind=exvardecla;	//该节点的标识码设定唯exfuncdecla
 	p->sibling=NULL;		//兄弟节点设为NULL
-//	p->child=NULL;			//孩子节点设为空 
 	T->sibling=p;			//p节点作为形参T的兄弟节点 
 	p->child=TypeSpecifier();//调用类型处理函数 
 	syntaxtree q=p->child;	//设置中间过渡指针 
@@ -640,6 +766,18 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("函数定义节点："); 
 			break;
 		} 
+		
+		case compstmd:{	//处理复合语句节点
+			PrintSpace(step);	//输出前置空格
+			printf("复合语句："); 
+			break;
+			
+		case locvardecla:{ //处理局部变量声明节点
+			PrintSpace(step);	//输出前置空格
+			printf("局部变量声明："); 
+			break;
+		}
+		}
 	 }
   } 
 /******************************************************************
