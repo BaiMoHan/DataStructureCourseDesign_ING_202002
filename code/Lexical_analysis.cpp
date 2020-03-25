@@ -17,6 +17,22 @@ Lexer::Lexer()
 	state=0;		//自动机初始状态 
 	DFAflag=1;		//初始化DFA分析标记为成功标记1
 	errorflag=0;	//初始化语法树分析错误标志为0 
+	//{2,2,5,5,4,4,6,7,8,3,1,1,3,2}
+	for(int i=0;i<2;i++)
+		oplevel[i]=2;
+	for(int i=2;i<4;i++)
+		oplevel[i]=5;
+	for(int i=4;i<6;i++)
+		oplevel[i]=4;
+	for(int i=6;i<9;i++)
+		oplevel[i]=i;
+	oplevel[9]=3;
+	for(int i=10;i<12;i++)
+		oplevel[i]=1;
+	oplevel[12]=3;
+	oplevel[13]=2;
+//	for(int i=0;i<14;i++)
+//		cout<<oplevel[i]<<endl;
 	//提示用户输入文件名 
 	printf("请输入要分析的源程序文件名(不超过30个字符),filename=");
 	//读取用户输入的文件名 

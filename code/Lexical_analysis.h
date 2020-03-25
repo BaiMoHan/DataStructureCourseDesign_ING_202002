@@ -78,6 +78,7 @@ class Lexer	//词法分析类
 		void DeleteTree(syntaxtree& root);	//释放树空间 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
+		int oplevel[14];
 		syntaxtree root=NULL;	//语法树根节点 
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
 		TokenType gettokentype(string str);//获取字符串的标识符 
