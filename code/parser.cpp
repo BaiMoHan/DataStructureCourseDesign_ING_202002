@@ -5,7 +5,6 @@
 using namespace std;
 #include<iostream>
 
-//void PrintNode(syntaxtree p,int step);	//打印树结点函数前置声明 
 status Lexer::Program()	//程序语法分析函数开始
 {
 	root=new syntaxnode; 
@@ -243,6 +242,22 @@ status Lexer::FunctionDefine()
 				T=T->sibling;		//移动到下一个兄弟节点 
 			 } 
 			 T->sibling=CompoundStmd();
+			 if(errorflag)	//如果出现了错误
+			 {
+			 	return ERROR;//返回错误值 
+			  } 
+//			else
+//			{
+//				if(T->sibling)	//有局部变量声明节点
+//				{
+//					T=T->sibling;//移动到局部变量声明节点 
+//					T->sibling=StatementList();//调用语句序列处理函数 
+//				 } 
+//				else	//无局部变量声明节点 
+//				{
+//					T->sibling=StatmentList();//调用语句序列处理函数 
+//				}
+//			 } 
 			if(tokenlist[index].tokentype==RP)
 			{
 				index++;
@@ -275,28 +290,89 @@ syntaxtree Lexer::CompoundStmd()
 	p->child=NULL;	//初始化孩子节点 
 	p->sibling=NULL; //初始化兄弟节点
 	p->kind=compstmd;//设置节点识别码为compstmd 
+	syntaxtree q=p;	//保存初始复合语句节点的地址 
 	if((1<=tokenlist[index].tokentype&&tokenlist[index].tokentype<=6)||tokenlist[index].tokentype==CONST)
 	{
 		p->child=LocalVar();
 		if(errorflag)
 			return NULL;
-		else
-			return p;
-	}	
+	}
+	if(p->child)	//如果有第一个孩子
+	{
+		p->child->sibling=StatementList();//调用语句序列处理函数
+		if(errorflag)
+		{
+			return NULL;
+		 } 
+	 } 
+	else	//无第一个孩子
+	{
+		p->child=StatementList();//调用语句序列处理函数生成第一个孩子 
+		if(errorflag)
+		{
+			return NULL;
+		 } 
+	 } 
+	if(tokenlist[index].tokentype!=RP) 
+	{
+		errorflag=1;//设置errorflag 
+		printf("Error:Expected a '}';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return NULL;//返回NULL 
+	}
+	return q;	
  } 
 /*************************************************
 函数功能：语句序列处理函数
 *************************************************/
 syntaxtree Lexer::StatementList()
 {
-	
+	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点 
+	p->sibling=NULL; //初始化兄弟节点
+	p->kind=statelist;//设置节点识别码为statelist 
+	syntaxtree q=p;	//保存初始节点地址 
+	p->child=Statement();//调用处理语句的子程序
+	if(p->child==NULL) //如果为空 
+		return NULL;	//不管是错误或是无语句,都是返回NULL,错误之前都标记好了
+	else
+	{
+		p=p->child;	//移动到孩子节点
+		p->sibling=StatementList();//递归处理剩余的语句序列
+		return q;	//返回初始地址 
+	 } 
  } 
 /***************************************************
 函数功能：语句处理函数
 ***************************************************/
 syntaxtree Lexer::Statement()
 {
-	
+	syntaxtree p=NULL;	//设置中间指针变量 
+	switch(tokenlist[index].tokentype){	//根据词法识别码来处理语句
+		
+		case RETURN:{
+			return NULL;
+			break;
+		} 
+		
+		case BREAK:{	//break语句
+			p=BreakState(); 
+			return p;
+			break;
+		} 
+		
+		case RP:{	//遇到右花括号,就是语句序列结束 
+			return NULL; 
+			break;
+		}
+		
+	} //end of switch
  } 
 /*************************************************
 函数功能：表达式处理函数
@@ -773,14 +849,25 @@ void Lexer::PrintTree(syntaxtree& root)
 			PrintSpace(step);	//输出前置空格
 			printf("复合语句："); 
 			break;
-			
+		}
+		
 		case locvardecla:{ //处理局部变量声明节点
 			PrintSpace(step);	//输出前置空格
 			printf("局部变量声明："); 
 			break;
 		}
+		
+		case statelist:{	//处理语句序列节点
+			PrintSpace(step);	//输出前置空格
+			printf("语句序列:"); 
+			break;
 		}
-	 }
+		case breaknode:{	//处理break节点
+			PrintSpace(step);//输出前置空格
+			printf("break"); 
+			break;
+		}
+	 }//end of switch
   } 
 /******************************************************************
 函数功能：插入p的兄弟节点q
