@@ -246,18 +246,6 @@ status Lexer::FunctionDefine()
 			 {
 			 	return ERROR;//返回错误值 
 			  } 
-//			else
-//			{
-//				if(T->sibling)	//有局部变量声明节点
-//				{
-//					T=T->sibling;//移动到局部变量声明节点 
-//					T->sibling=StatementList();//调用语句序列处理函数 
-//				 } 
-//				else	//无局部变量声明节点 
-//				{
-//					T->sibling=StatmentList();//调用语句序列处理函数 
-//				}
-//			 } 
 			if(tokenlist[index].tokentype==RP)
 			{
 				index++;
@@ -356,6 +344,11 @@ syntaxtree Lexer::Statement()
 	syntaxtree p=NULL;	//设置中间指针变量 
 	switch(tokenlist[index].tokentype){	//根据词法识别码来处理语句
 		
+		case IF:{	//分析条件语句 
+			
+			break;
+		}
+		
 		case RETURN:{
 			return NULL;
 			break;
@@ -379,7 +372,103 @@ syntaxtree Lexer::Statement()
 ***************************************************/
 syntaxtree Lexer::Expression()
 {
-	
+	syntaxtree t2=NULL;
+	syntaxtree t1=NULL;
+	syntaxtree t=NULL; 
+	stack<syntaxtree> op;//定义运算符栈,指针元素 
+	syntaxtree p=new syntaxnode; //为初始化#申请内存空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 }  
+	p->kind=spec;	//设置#节点的识别码为spe
+	p->child=NULL;	//初始化孩子节点 
+	p->sibling=NULL; //初始化兄弟节点
+	op.push(p);		//加入操作符栈
+	stack<syntaxtree> opn;	//定义操作数栈
+	TokenType w=tokenlist[index].tokentype;//保存当前读取词的识别码 
+	while((w!=SPEC||op.top()->kind!=spec)&&!errorflag)	//当运算符栈栈顶不是起止符号或者没有读到表达式末尾时，并且没有错误时 
+	{
+		if(w==ID||(7<=w&&w<=11)) //如果是标识符或者常量
+		{
+			//生成一个节点 
+			syntaxtree q=new syntaxnode; //为初始化#申请内存空间
+			if(q==NULL)		//判断空间是否申请成功
+			{
+				//输出信息 
+				printf("内存申请失败！\n内存不够，自动关闭\n");
+				getchar();getchar();	//等待用户响应 
+				exit(0);
+			 }  
+			 q->kind=exp;	//设置节点类型为表达式组成
+			 q->listindex=index;//保存tokenlist中的索引
+			 q->child=NULL; //孩子节点置空 
+			 q->sibling=NULL;//兄弟节点置空
+			 opn.push(q);	//操作数进opn栈 
+			 index++;	//读取下一个词 
+			 w=tokenlist[index].tokentype;//更新w 
+		 } 
+		 else if(37<=w&&w<=50) //如果是算符
+		 {
+		 	switch(JudgeLevel(op.top()->listindex,w)){
+		 		case -1:{	//当前优先级低，出栈形成节点 
+		 			if(opn.size()>=2&&op.size())	//如果操作数栈至少有两个元素，操作符栈有一个元素 
+		 			{
+					 	t2=opn.top();//获取当前操作数栈顶元素 
+					 	opn.pop();//弹出栈顶 
+						t1=opn.top();//获取当前操作数栈顶元素
+						opn.pop();//弹出栈顶
+						t=op.top();//获取当前操作符栈顶元素
+						op.pop();	//弹出栈顶
+						t->child=t1;//t1作为t的孩子
+						t1->sibling=t2;//t1的兄弟节点为t2
+						opn.push(t);	//连接成功后,根节点指针进操作数栈 
+					} 
+					else{
+						printf("\nError:Expected correct expresion;Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+						errorflag=1;//设置错误标记 
+					} 
+					break;
+				 }//处理优先级低的出栈结束 
+				 
+				case 1:{	//当前优先级高，进栈 
+					syntaxtree z=new syntaxnode; //为该操作符申请内存空间 
+					if(z==NULL)		//判断空间是否申请成功
+					{
+						//输出信息 
+						printf("内存申请失败！\n内存不够，自动关闭\n");
+						getchar();getchar();	//等待用户响应 
+						exit(0);
+					 }  
+					z->listindex=index;	//保存在tokenlist中的索引
+					z->child=NULL;	//初始化孩子节点
+					z->sibling=NULL;//初始化兄弟节点
+					z->kind=exp;	//设置节点类型为表达式组成部分
+					op.push(z);		//该操作符进栈
+					index++;		//取下一个词 
+					w=tokenlist[index].tokentype;//更新w 
+					break;
+				}//处理优先级高的进栈结束 
+			 }
+		  }
+		  else	if(w==SEMI||w==BRACKETR)	//如果是分号或者)，就是结束符
+		  	w=SPEC;	//w换成#
+		  else //其他符号均为错
+		  {
+			  	printf("\nError:Expected correct expression;Located on line No.%d;\nnear charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			  	errorflag=1;
+		   } 
+	 }//end of while 
+	 if(opn.size()==1&&op.top()->kind==spec&&!errorflag)//操作数栈只剩一个，操作符只剩#，无错误
+	 	return opn.top();	//返回操作数栈顶最后一个元素 
+	 else 
+	 { 
+	 	printf("\nError:Expected correct expression;Located on line No.%d\nahead of charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+	 	return NULL; 
+	 } 
  } 
 /************************************************
 函数功能：处理函数内的局部变量声明
@@ -862,13 +951,30 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("语句序列:"); 
 			break;
 		}
+		
 		case breaknode:{	//处理break节点
 			PrintSpace(step);//输出前置空格
 			printf("break"); 
 			break;
 		}
+		
+		case exp:{	//处理表达式组成部分节点
+			PrintSpace(step);	//输出前置空格
+			printf("%s",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		}
 	 }//end of switch
   } 
+/***********************************************************
+函数功能：判断算符的优先级
+**************************************************************/
+int Lexer::JudgeLevel(int index,TokenType w)
+{
+	if(oplevel[tokenlist[index].tokentype-37]<=oplevel[w-37])	//如果当前算符的优先级低 
+		return -1;
+	if(oplevel[tokenlist[index].tokentype-37]>oplevel[w-37])	//如果当前优先级高 
+		return  1; 
+ } 
 /******************************************************************
 函数功能：插入p的兄弟节点q
 ******************************************************************/

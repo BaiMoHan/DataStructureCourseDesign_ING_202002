@@ -30,7 +30,7 @@ Lexer::Lexer()
 	for(int i=10;i<12;i++)
 		oplevel[i]=1;
 	oplevel[12]=3;
-	oplevel[13]=2;
+	oplevel[13]=9;
 //	for(int i=0;i<14;i++)
 //		cout<<oplevel[i]<<endl;
 	//提示用户输入文件名 
