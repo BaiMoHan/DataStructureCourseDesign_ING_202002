@@ -14,7 +14,7 @@ typedef enum{		//定义词法需要的识别码
 	 INT=1,CHAR,FLOAT,DOUBLE,LONG,VOID,INTCONST,CHARCONST,LONGCONST,FLOATCONST,DOUBLECONST,STRINGCONST,
 	 CONST,INCLUDE,IF,ELSE,WHILE,FOR,BREAK,RETURN,CONTINUE,MAIN,SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,COMMENT,ADDEQ,
 	 ADDSELF,PML,REDUCEEQ,REDUCESELF,PMR,MUTIPLYEQ,MODEQ,DIVIDEEQ,MOD,DIVIDE,EQ,NOTEQ,LESS,GREATER,AND,
-	 OR,ASSIGN,ADD,REDUCE,MUTIPLY,BRACKETL,SPEC,LP,RP,COMMA,SEMI,ENDFILE,ID,BRACKETR
+	 OR,ASSIGN,ADD,REDUCE,MUTIPLY,SPEC,BRACKETL,LP,RP,COMMA,SEMI,ENDFILE,ID,BRACKETR
 	
 }TokenType; 
 
@@ -27,9 +27,9 @@ typedef struct token{
 
 typedef enum{	//定义语法树的结点类别
 	//过渡节点,根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
-	//数据类型,标识符变量名,数组,外部变量声明,函数定义,复合语句,语句序列,局部变量声明,返回语句,break语句,#号,表达式组成, 
+	//数据类型,标识符变量名,数组,外部变量声明,函数定义,复合语句,语句序列,局部变量声明,返回语句,break语句,#号,表达式组成,表达式 
 	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,type,id,array,exvardecla,funcdef,
-	compstmd,statelist,locvardecla,returnnode,breaknode,spec,exp,
+	compstmd,statelist,locvardecla,returnnode,breaknode,spec,exp,expre
 }nodekind;
 
 	
@@ -69,6 +69,9 @@ class Lexer	//词法分析类
 		
 		syntaxtree ReturnState();	//处理return语句 
 		syntaxtree BreakState();	//处理break语句 
+		
+		status PrintCFile();		//输出缩进文件
+		status PrintBlock(FILE* fp,int step);//语句块输出 
 		 
 		status ExVarDeclaration();			//外部变量声明处理函数 
 		status FunctionDefine(syntaxtree &T);	//函数定义函数
@@ -79,6 +82,7 @@ class Lexer	//词法分析类
 		void DeleteTree(syntaxtree& root);	//释放树空间 
 		void PrintWords();//词法分析成功后输出识别出来的词 
 	private:
+		int current;	//输出文件索引 
 		int oplevel[14];
 		syntaxtree root=NULL;	//语法树根节点 
 		int counttimes(string str);	//统计标识符在tokenlist出现的次数 
@@ -86,7 +90,7 @@ class Lexer	//词法分析类
 		int state;				//词法分析状态 
 		int DFAflag;			//DFA有限自动机分析情况标志
 		int errorflag;			//语法树错误标志 
-		char filename[30];		//测试文件名 
+		char filename[40];		//测试文件名 
 		int  linecount;			//行号计数器
 		vector<token> tokenlist;//存放自动机识别出来的词
 		int vectorindex;		//tokenlist的取词索引

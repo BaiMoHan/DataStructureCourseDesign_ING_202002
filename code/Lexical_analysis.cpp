@@ -11,6 +11,7 @@ int judge_ch_id(char ch);//判断是否是构成标识符的函数
 
 Lexer::Lexer()
 {//Lexer类构造函数 
+	current=0;		//输出文件取词索引初始化 
 	index=0;		//初始化取词索引 
 	linecount=1;	//初始化行号 
 	vectorindex=0;	//初始化tokenlist索引 
@@ -44,8 +45,10 @@ Lexer::Lexer()
 	{ 
 		 PrintWords();	//打印词法分析的结果 
 		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
-		 Program();
-		 PrintTree(root) ;
+//		 Program();
+//		 PrintTree(root) ;
+		if(PrintCFile()==OK)
+			printf("输出成功！\n");
 	} 
 	else
 	{
@@ -192,7 +195,7 @@ void Lexer::analysis(char filename[])
 				t.linenum=linecount;
 				t.times=0;	//保存该常量出现的次数为0，常量不需要记录出现次数 
 				t.tokenstring=str;//保存该常量完整的字符串形式
-				t.tokentype=INT;//保存该常量long型常量的识别码 
+				t.tokentype=INTCONST;//保存该常量long型常量的识别码 
 				tokenlist.push_back(t);//加入到tokenlist中去
 				Const.push_back(vectorindex);//将该整型常量的索引保存
 				vectorindex++;		//tokenlist索引自增  
@@ -683,20 +686,20 @@ void Lexer::analysis(char filename[])
 				vectorindex++;			//tokenlist索引自增
 				str="";				//重置拼接串 
 				break;
-			} 	//处理左花括号状态结束
+			} 	//处理左圆括号状态结束
 			
 			case ')':{		//处理右圆括号状态 
 				str+=ch;	//加入拼接
 				t.linenum=linecount;	//更新行号
 				t.times=counttimes(str);//更新次数
 				tempstr='(';		//保存左圆括号
-				if(counttimes(tempstr)==1)	//如果之前没有出现左花括号
+				if(counttimes(tempstr)==1)	//如果之前没有出现左圆括号
 				{
 					//多余的),输出错误信息 
 					printf("ERROR:Character ')' is a lack of matching;Located on line No.%d\n",linecount);
 					str="";	//重置拼接串 
 				 } 
-				else if(t.times>counttimes(tempstr))//如果前面所有的{都有匹配
+				else if(t.times>counttimes(tempstr))//如果前面所有的(都有匹配
 				{
 					//多余的),输出错误信息
 					printf("ERROR:Character ')' is a lack of matching;Located on line No.%d\n",linecount);
@@ -952,7 +955,10 @@ void Lexer::analysis(char filename[])
 	str='\0';				//结束字符
 	t.tokenstring=str;		//加入结束字符 
 	tokenlist.push_back(t);	//加入tokenlist中去作为程序终止 
-	
+	//为后面表达式识别加入一个附加元素# 
+	str="#";
+	t.tokentype=SPEC;
+	tokenlist.push_back(t);//加入tokenlist中便于以后统计表达式 
 	fclose(fp); 	//操作完后关闭文件 
 	
 }	//end of analysis 

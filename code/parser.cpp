@@ -354,6 +354,23 @@ syntaxtree Lexer::Statement()
 			break;
 		} 
 		
+		case BRACKETL:{	//遇到（
+			index++;
+			p=Expression();
+			if(errorflag)
+				return NULL;
+			else
+			{
+				if(tokenlist[index].tokentype==BRACKETR)
+				{
+					index++;
+					return p;
+				}
+				else
+					return NULL; 
+			}
+			break;
+		} 
 		case BREAK:{	//break语句
 			p=BreakState(); 
 			return p;
@@ -387,6 +404,7 @@ syntaxtree Lexer::Expression()
 	p->kind=spec;	//设置#节点的识别码为spe
 	p->child=NULL;	//初始化孩子节点 
 	p->sibling=NULL; //初始化兄弟节点
+	p->listindex=vectorindex+1;//#在tokenlist中附加区放置 
 	op.push(p);		//加入操作符栈
 	stack<syntaxtree> opn;	//定义操作数栈
 	TokenType w=tokenlist[index].tokentype;//保存当前读取词的识别码 
@@ -411,7 +429,7 @@ syntaxtree Lexer::Expression()
 			 index++;	//读取下一个词 
 			 w=tokenlist[index].tokentype;//更新w 
 		 } 
-		 else if(37<=w&&w<=50) //如果是算符
+		 else if(37<=w&&w<49) //如果是算符
 		 {
 		 	switch(JudgeLevel(op.top()->listindex,w)){
 		 		case -1:{	//当前优先级低，出栈形成节点 
@@ -423,6 +441,7 @@ syntaxtree Lexer::Expression()
 						opn.pop();//弹出栈顶
 						t=op.top();//获取当前操作符栈顶元素
 						op.pop();	//弹出栈顶
+						t->kind=expre;//表达式根节点类型 
 						t->child=t1;//t1作为t的孩子
 						t1->sibling=t2;//t1的兄弟节点为t2
 						opn.push(t);	//连接成功后,根节点指针进操作数栈 
@@ -963,6 +982,14 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("%s",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		}
+		
+		case expre:{//处理表达式子树根节点
+			PrintSpace(step);	//输出前置空格
+			printf("表达式：");
+			PrintSpace(step);
+			printf("%s",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		} 
 	 }//end of switch
   } 
 /***********************************************************
