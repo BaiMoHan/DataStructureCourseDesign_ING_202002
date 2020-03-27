@@ -64,8 +64,10 @@ status Lexer::PrintCFile()
 			}
 			
 			case LP:{
-				fprintf(fp,"%s\n",tokenlist[current].tokenstring.c_str()); 
+//				fprintf(fp,"%s\n",tokenlist[current].tokenstring.c_str()); 
+//				current++;
 				PrintBlock(fp,step);	//进入语句块 
+//				fprintf(fp,"\n%s\n",tokenlist[current].tokenstring.c_str()); 
 				break;
 			} 
 			
@@ -85,11 +87,22 @@ status Lexer::PrintCFile()
 
 status Lexer::PrintBlock(FILE* fp,int step)	//语句块处理
 {
+
 	//输出前置空格 
-	for(int i=0;i<step;i++)
+	for(int i=0;i<step-1;i++)
 		fprintf(fp,"    ");
-	current++; 
-	while(tokenlist[current].tokentype!=RP)	//遇到语句块}就退出 
+	fprintf(fp,"%s   ",tokenlist[current].tokenstring.c_str()); 
+	current++;
+	if(tokenlist[current].tokentype==COMMENT&&tokenlist[current-1].linenum==tokenlist[current].linenum)	//如果{后有注释 
+	{
+		fprintf(fp,"%s",tokenlist[current].tokenstring.c_str());
+		current++;
+	}
+	fprintf(fp,"\n");
+	if(tokenlist[current].tokentype!=LP)
+		for(int i=0;i<step;i++)
+			fprintf(fp,"    ");
+	while(tokenlist[current].tokentype!=RP&&tokenlist[current].tokentype!=ENDFILE)	//遇到语句块}就退出 
 	{ 
 		switch(tokenlist[current].tokentype){
 			
@@ -115,7 +128,7 @@ status Lexer::PrintBlock(FILE* fp,int step)	//语句块处理
 			case SEMI: 
 			case COMMENT:{	
 				fprintf(fp,"%s",tokenlist[current].tokenstring.c_str()); 
-				if(tokenlist[current].linenum<tokenlist[current+1].linenum)
+				if(tokenlist[current].linenum<tokenlist[current+1].linenum&&tokenlist[current+1].tokentype!=RP)
 				{ 
 					fprintf(fp,"\n"); 
 					for(int i=0;i<step;i++)	//输出前置空格 
@@ -127,7 +140,7 @@ status Lexer::PrintBlock(FILE* fp,int step)	//语句块处理
 			
 			case BRACKETR:{	//检查换行并追加空格
 			 	fprintf(fp,"%s ",tokenlist[current].tokenstring.c_str()); 
-				if(tokenlist[current].linenum<tokenlist[current+1].linenum)
+				if(tokenlist[current].linenum<tokenlist[current+1].linenum&&tokenlist[current+1].tokentype!=RP)
 				{ 
 					fprintf(fp,"\n");
 					for(int i=0;i<step;i++)	//输出前置空格 
@@ -138,7 +151,13 @@ status Lexer::PrintBlock(FILE* fp,int step)	//语句块处理
 			}
 			
 			case LP:{
+//				fprintf(fp,"%s\n",tokenlist[current].tokenstring.c_str()); 
+//				current++;
 				PrintBlock(fp,step+1);	//进入语句块 
+//				for(int i=0;i<step;i++)	//输出前置空格 
+//						fprintf(fp,"    ");
+//				fprintf(fp,"%s\n",tokenlist[current].tokenstring.c_str()); 
+//				current++;
 				break;
 			} 
 			
@@ -152,10 +171,17 @@ status Lexer::PrintBlock(FILE* fp,int step)	//语句块处理
 		}//end of switch 
 	 } //end of while
 	//输出后置}格式 
+	fprintf(fp,"\n");
 	for(int i=0;i<step-1;i++)
 		fprintf(fp,"    ");
-	fprintf(fp,"%s",tokenlist[current].tokenstring.c_str()); 
-	current++;//索引自增 
+	fprintf(fp,"%s  ",tokenlist[current].tokenstring.c_str()); 
+	current++;
+	if(tokenlist[current].tokentype==COMMENT&&tokenlist[current-1].linenum==tokenlist[current].linenum)	//如果}后有注释 
+	{
+		fprintf(fp,"%s",tokenlist[current].tokenstring.c_str());
+		current++;
+	}
+	fprintf(fp,"\n"); 
 	 return OK;
  } 
 #endif
