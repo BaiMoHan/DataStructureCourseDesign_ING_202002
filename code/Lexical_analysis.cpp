@@ -960,7 +960,34 @@ void Lexer::analysis(char filename[])
 	t.tokentype=SPEC;
 	tokenlist.push_back(t);//加入tokenlist中便于以后统计表达式 
 	fclose(fp); 	//操作完后关闭文件 
-	
+	//判断括号是否匹配的问题
+	int num1,num2;	//声明两个计数变量 
+	string str1,str2;//声明两个字符串存放变量
+	//判断（）括号次数是否一致 
+	str1="("; str2=")";
+	num1=counttimes(str1);
+	num2=counttimes(str2);
+	if(num1!=num2)
+	{
+		DFAflag=0;	//词法分析标记置0
+		printf("Error:the number of '%s' is not equal to the number of '%s'\n",str1.c_str(),str2.c_str()); 
+	}
+	str1="["; str2="]";
+	num1=counttimes(str1);
+	num2=counttimes(str2);
+	if(num1!=num2)
+	{
+		DFAflag=0;	//词法分析标记置0
+		printf("Error:the number of '%s' is not equal to the number of '%s'\n",str1.c_str(),str2.c_str()); 
+	}
+	str1="{"; str2="}";
+	num1=counttimes(str1);
+	num2=counttimes(str2);
+	if(num1!=num2)
+	{
+		DFAflag=0;	//词法分析标记置0
+		printf("Error:the number of '%s' is not equal to the number of '%s'\n",str1.c_str(),str2.c_str()); 
+	}	
 }	//end of analysis 
 
 
