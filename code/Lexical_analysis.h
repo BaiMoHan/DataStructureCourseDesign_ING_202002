@@ -14,7 +14,7 @@ typedef enum{		//定义词法需要的识别码
 	 INT=1,CHAR,FLOAT,DOUBLE,LONG,VOID,INTCONST,CHARCONST,LONGCONST,FLOATCONST,DOUBLECONST,STRINGCONST,
 	 CONST,INCLUDE,IF,ELSE,WHILE,FOR,BREAK,RETURN,CONTINUE,MAIN,SQUTOE_L,SQUTOE_R,DQUTOE_L,DQUTOE_R,COMMENT,ADDEQ,
 	 ADDSELF,PML,REDUCEEQ,REDUCESELF,PMR,MUTIPLYEQ,MODEQ,DIVIDEEQ,MOD,DIVIDE,EQ,NOTEQ,LESS,GREATER,AND,
-	 OR,ASSIGN,ADD,REDUCE,MUTIPLY,SPEC,BRACKETL,LP,RP,COMMA,SEMI,ENDFILE,ID,BRACKETR
+	 OR,ASSIGN,ADD,REDUCE,MUTIPLY,BRACKETL,SPEC,LP,RP,COMMA,SEMI,ENDFILE,ID,BRACKETR
 	
 }TokenType; 
 
@@ -27,9 +27,10 @@ typedef struct token{
 
 typedef enum{	//定义语法树的结点类别
 	//过渡节点,根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
-	//数据类型,标识符变量名,数组,外部变量声明,函数定义,复合语句,语句序列,局部变量声明,返回语句,break语句,#号,表达式组成,表达式 
+	//数据类型,标识符变量名,数组,外部变量声明,函数定义,复合语句,语句序列,局部变量声明,返回语句,break语句,
+	//continue语句,if节点,if条件句,if字句,else节点,#号,表达式组成,表达式 
 	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,type,id,array,exvardecla,funcdef,
-	compstmd,statelist,locvardecla,returnnode,breaknode,spec,exp,expre
+	compstmd,statelist,locvardecla,returnnode,breaknode,continuenode,ifnode,ifelsenode,ifjudge,ifcmsd,elsenode,spec,exp,expre
 }nodekind;
 
 	
@@ -69,6 +70,8 @@ class Lexer	//词法分析类
 		
 		syntaxtree ReturnState();	//处理return语句 
 		syntaxtree BreakState();	//处理break语句 
+		syntaxtree ContinueState();	//处理continue语句 
+		syntaxtree IfState();		//处理if语句 
 		
 		status PrintCFile();		//输出缩进文件
 		status PrintBlock(FILE* fp,int step);//语句块输出 

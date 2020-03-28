@@ -1,2 +1,10 @@
+#include<sykh.h>
+int fun(int oo,char b)
 {
+if(a+b>3)
+{
+a=a+4;
+}
+else
+b=b+7;
 }

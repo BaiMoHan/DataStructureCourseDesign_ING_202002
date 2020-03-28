@@ -69,10 +69,12 @@ status Lexer::Program()	//程序语法分析函数开始
 	if(DeclarationList()==OK)		//调用外部声明语句,最后一个兄弟节点的地址作为形参传入 
 	{
 		printf("\n\n语法分析成功\n"); 
+		return OK;
 	}
 	else{
 		DeleteTree(root);
 		printf("\n遇到语法树分析错误，已经释放语法树内存空间完毕！\n"); 
+		return ERROR;
 	} 
 	 
 //	 PrintTree(root); 
@@ -235,7 +237,7 @@ status Lexer::FunctionDefine()
 		index++;	//调用FunctionDeclaration()后index指向的是）
 		if(tokenlist[index].tokentype==LP)
 		{
-			index++;
+//			index++;
 			T=T->child;	//移到下一层语法树
 			while(T&&T->sibling)	//找到该层最后的兄弟节点
 			{
@@ -267,6 +269,7 @@ status Lexer::FunctionDefine()
 ************************************************/
 syntaxtree Lexer::CompoundStmd()
 {
+	index++;
 	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
 	if(p==NULL)		//判断空间是否申请成功
 	{
@@ -345,35 +348,62 @@ syntaxtree Lexer::Statement()
 	switch(tokenlist[index].tokentype){	//根据词法识别码来处理语句
 		
 		case IF:{	//分析条件语句 
-			
+//			index++;
+			p=IfState();	//调用if语句
+			if(tokenlist[index].tokentype==SEMI)
+				index++; 
 			break;
 		}
 		
+		case ID:{
+			p=Expression();
+			if(errorflag)
+				return NULL;
+			if(tokenlist[index].tokentype!=SEMI)
+			{
+				errorflag=1;
+				printf("\nError:Expected ';' after expression;Located on line No.%d;\nnear charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+				return NULL;
+			 } 
+			index++;
+			break;
+		} 
 		case RETURN:{
-			return NULL;
+			p=ReturnState();//调用ReturnState处理
+			index++;	//读取下一个词 
 			break;
 		} 
 		
 		case BRACKETL:{	//遇到（
 			index++;
 			p=Expression();
-			if(errorflag)
+			if(errorflag||tokenlist[index].tokentype!=BRACKETR)//如果有错误或者不是因为）结束
+			{ 
+				errorflag=1;	//错误标记置1
+				printf("\nError:Expected the end of experssion is ')';Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
 				return NULL;
+			} 
 			else
 			{
-				if(tokenlist[index].tokentype==BRACKETR)
-				{
-					index++;
-					return p;
-				}
-				else
-					return NULL; 
+				index++;	//表达式正确,取词索引自增 
 			}
 			break;
 		} 
+		
 		case BREAK:{	//break语句
 			p=BreakState(); 
-			return p;
+//			return p;
+			break;
+		} 
+		
+		case CONTINUE:{	//continue语句 
+			p=ContinueState(); 
+			break;
+		} 
+		
+		case LP:{	//遇到左花括号，就是复合语句
+//			index++;//过滤{ 
+			p=CompoundStmd();//调用复合语句处理 
 			break;
 		} 
 		
@@ -383,6 +413,7 @@ syntaxtree Lexer::Statement()
 		}
 		
 	} //end of switch
+	return p;
  } 
 /*************************************************
 函数功能：表达式处理函数
@@ -429,7 +460,7 @@ syntaxtree Lexer::Expression()
 			 index++;	//读取下一个词 
 			 w=tokenlist[index].tokentype;//更新w 
 		 } 
-		 else if(37<=w&&w<49) //如果是算符
+		 else if(37<=w&&w<=50) //如果是算符
 		 {
 		 	switch(JudgeLevel(op.top()->listindex,w)){
 		 		case -1:{	//当前优先级低，出栈形成节点 
@@ -485,6 +516,7 @@ syntaxtree Lexer::Expression()
 	 	return opn.top();	//返回操作数栈顶最后一个元素 
 	 else 
 	 { 
+	 	errorflag=1;	//错误标记置1 
 	 	printf("\nError:Expected correct expression;Located on line No.%d\nahead of charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 	 	return NULL; 
 	 } 
@@ -990,6 +1022,49 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("%s",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		} 
+		
+		case returnnode:{	//处理return语句
+			PrintSpace(step);	//输出前置空格
+			printf("返回语句return："); 
+			break;
+		}
+		
+		case continuenode:{	//处理continue
+			PrintSpace(step);	//输出前置空格
+			printf("continue"); 
+			break;
+		}
+		
+		case ifnode:{	//处理单纯if句
+			PrintSpace(step);	//输出前置空格
+			printf("条件句 if型"); 
+			break;
+		}
+		
+		case ifelsenode:{	//处理ifelse型
+			PrintSpace(step);	//输出前置空格
+			printf("条件句 if-else型"); 
+			break;
+		}
+		
+		case ifjudge:{	//处理条件节点
+			PrintSpace(step);
+			printf("条件句："); 
+			break;
+		}
+		
+		case ifcmsd:{	//处理if子句
+			PrintSpace(step);
+			printf("if子句："); 
+			break;
+		}
+		
+		case elsenode:{	//处理else节点
+			PrintSpace(step);
+			printf("else："); 
+			break;
+		}
+		
 	 }//end of switch
   } 
 /***********************************************************
