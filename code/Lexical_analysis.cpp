@@ -51,6 +51,7 @@ Lexer::Lexer()
 			if(PrintCFile()==OK)
 				printf("Êä³ö³É¹¦£¡\n");
 		}
+//		PrintCFile(); 
 	} 
 	else
 	{

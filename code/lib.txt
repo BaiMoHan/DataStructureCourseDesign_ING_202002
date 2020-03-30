@@ -1,10 +1,40 @@
-#include<sykh.h>
+/********************
+****must ASCII******
+*********************/
+#include<stdio.h>
+int k ;
 int fun(int oo,char b)
 {
+int a;
+double b;
+char c;
+long d;
+float f;
+a=1;
+d=1.9l;
+d=1.6f;
+fun(b,c);
 if(a+b>3)
 {
-a=a+4;
+a=a/4;
 }
 else
-b=b+7;
+{
+b=b%7;
+}
+while(a>1&&b+5==8||d-1!=0)
+{
+a=a*b-d;
+break;
+}
+for(a=0;a!=0;a=a+1)
+{
+d=b/a;
+continue;
+}
+}
+int main()
+{
+int d;
+d=d-2;
 }

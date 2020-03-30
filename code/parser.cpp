@@ -356,15 +356,28 @@ syntaxtree Lexer::Statement()
 		}
 		
 		case ID:{
-			p=Expression();
-			if(errorflag)
-				return NULL;
-			if(tokenlist[index].tokentype!=SEMI)
+			if(tokenlist[index+1].tokentype==BRACKETL)	//判断是否是函数调用
 			{
-				errorflag=1;
-				printf("\nError:Expected ';' after expression;Located on line No.%d;\nnear charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-				return NULL;
+				p=CallFunc();
+				index++;
+				if(tokenlist[index].tokentype!=SEMI)
+				{
+					errorflag=1;
+					return NULL;
+				}
 			 } 
+			else
+			{
+				p=Expression();
+				if(errorflag)
+					return NULL;
+				if(tokenlist[index].tokentype!=SEMI)
+				{
+					errorflag=1;
+					printf("\nError:Expected ';' after expression;Located on line No.%d;\nnear charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+					return NULL;
+				 } 
+			}
 			index++;
 			break;
 		} 
@@ -411,6 +424,12 @@ syntaxtree Lexer::Statement()
 			return NULL; 
 			break;
 		}
+		
+		
+		case COMMENT:{	//遇到注释就跳过
+			index++; 
+			break;
+		} 
 		
 	} //end of switch
 	return p;
@@ -1062,6 +1081,12 @@ void Lexer::PrintTree(syntaxtree& root)
 		case elsenode:{	//处理else节点
 			PrintSpace(step);
 			printf("else："); 
+			break;
+		}
+		
+		case callfunc:{	//函数调用
+			PrintSpace(step);	//输出前置空格
+			printf("函数%s调用",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		}
 		

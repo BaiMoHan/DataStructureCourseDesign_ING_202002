@@ -227,6 +227,45 @@ syntaxtree Lexer::IfState()
 	 	printf("Error:Expected a '(';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 		return NULL;//返回NULL 
 	  } 
- }  
+ } 
+/********************************************************************
+函数功能：处理函数调用语句,传进来的时候，index指向的还是标识符 
+*********************************************************************/
+syntaxtree Lexer::CallFunc()
+{
+	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点 
+	p->sibling=NULL; //初始化兄弟节点
+	p->kind=callfunc;//设置节点识别码为callfunc
+	p->listindex=index;	//保存函数名 
+	index=index+2;
+//	syntaxtree t=new;
+//	while(tokenlist[index].tokentype!=BRACKETR)	//遇到右括号就退出
+//	{
+//		syntaxtree q=new syntaxnode;	//为复合语句节点申请空间
+//		if(q==NULL)		//判断空间是否申请成功
+//		{
+//			//输出信息 
+//			printf("内存申请失败！\n内存不够，自动关闭\n");
+//			getchar();getchar();	//等待用户响应 
+//			exit(0);
+//		 } 
+//		q->child=NULL;	//初始化孩子节点 
+//		q->sibling=NULL; //初始化兄弟节点
+//		q->kind=callmeter;//设置节点识别码为callmeter
+//		
+//	 } 
+	p->child=Identifier(0);	//此时index已经走到了下一位
+	if(tokenlist[index].tokentype==BRACKETR)
+		return p; 
+
+ } 
 
 #endif

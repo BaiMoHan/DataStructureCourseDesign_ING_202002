@@ -28,9 +28,12 @@ typedef struct token{
 typedef enum{	//定义语法树的结点类别
 	//过渡节点,根节点,文件包含节点,引用文件名节点,外部函数声明,函数返回值类型,函数名,空函数形参序列,函数形参序列，
 	//数据类型,标识符变量名,数组,外部变量声明,函数定义,复合语句,语句序列,局部变量声明,返回语句,break语句,
-	//continue语句,if节点,if条件句,if字句,else节点,#号,表达式组成,表达式 
+	//continue语句,if节点,if条件句,if字句,else节点,函数调用节点,函数调用形参,for节点,for开始状态,for条件句,for迭代句,
+	//for子句,while节点,while条件句,while子句,#号,表达式组成,表达式 
 	rt=1,inclu,inclufile,exfuncdecla,functype,funcname,nonfuncparam,funcparam,type,id,array,exvardecla,funcdef,
-	compstmd,statelist,locvardecla,returnnode,breaknode,continuenode,ifnode,ifelsenode,ifjudge,ifcmsd,elsenode,spec,exp,expre
+	compstmd,statelist,locvardecla,returnnode,breaknode,continuenode,ifnode,ifelsenode,ifjudge,ifcmsd,elsenode,callfunc,callmeter,
+	fornode,forstart,forjudge,forchange,forstate,whilenode,whilejudge,whilestate
+	,spec,exp,expre
 }nodekind;
 
 	
@@ -72,7 +75,10 @@ class Lexer	//词法分析类
 		syntaxtree BreakState();	//处理break语句 
 		syntaxtree ContinueState();	//处理continue语句 
 		syntaxtree IfState();		//处理if语句 
-		
+		syntaxtree CallFunc();		//处理函数调用
+		syntaxtree ForState();		//处理for语句 
+		syntaxtree WhileState();	//处理while语句 
+		 
 		status PrintCFile();		//输出缩进文件
 		status PrintBlock(FILE* fp,int step);//语句块输出 
 		 
