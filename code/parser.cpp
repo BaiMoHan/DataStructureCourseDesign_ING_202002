@@ -561,14 +561,14 @@ syntaxtree Lexer::LocalVar()
 	{
 		if(tokenlist[index].tokentype==CONST)	//如果是const 
 			index++; 	//索引自增
-		if(p->kind==id||p->kind==array)	//如果节点类型是标识符或者数组 
+		if(p->kind==id||p->kind==array)	//如果节点类型是标识符或者数组,非第一次处理局部变量 
 		{
 			while(p->sibling)	//找到最后一个兄弟节点 
 			{
 				p=p->sibling;//移动到下一个兄弟节点 
 			}
 			p->sibling=TypeSpecifier();//调用类型声明处理函数
-			if(p->sibling==NULL) //处理类型声明错误 
+			if(errorflag) //处理类型声明错误 
 			{
 				return NULL;
 			}
@@ -578,14 +578,24 @@ syntaxtree Lexer::LocalVar()
 				p->sibling=Identifier(1);//调用标识符处理函数 
 				if(p->sibling==NULL)
 					return NULL ;
+				while(tokenlist[index].tokentype==COMMA&&!errorflag)//可能声明的不止一个变量
+				{
+					index++;//过滤逗号
+					while(p&&p->sibling)	//移到最后的兄弟节点处 
+						p=p->sibling;	//p移动到兄弟节点处
+					p->sibling=Identifier(1);//调用标识符处理函数 
+				 } 
+				if(errorflag)	//如果遇到错误
+					return NULL;
 				else if(tokenlist[index].tokentype!=SEMI)	//判断是否有分号
 				{
 					errorflag=1;
 					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 					return NULL; 
-				 } 
-				 p=p->sibling;	//移动到兄弟节点 
-				 index++;
+				 }
+				 while(p&&p->sibling) 
+				 	p=p->sibling;	//移动到兄弟节点 
+				 index++;//过滤掉分号 
 			 }
 		}
 		else	//第一次处理局部变量
@@ -601,14 +611,24 @@ syntaxtree Lexer::LocalVar()
 				p->sibling=Identifier(1);//调用标识符处理函数 
 				if(p->sibling==NULL)
 					return NULL ;
+				while(tokenlist[index].tokentype==COMMA&&!errorflag)//可能声明的不止一个变量
+				{
+					index++;//过滤逗号
+					while(p&&p->sibling)	//移到最后的兄弟节点处 
+						p=p->sibling;	//p移动到兄弟节点处
+					p->sibling=Identifier(1);//调用标识符处理函数 
+				 } 
+				if(errorflag)	//如果遇到错误
+					return NULL;
 				else if(tokenlist[index].tokentype!=SEMI)	//判断是否有分号
 				{
 					errorflag=1;
 					printf("\Error:Expected a ';' on line No.%d;near charactor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 					return NULL; 
 				 } 
-				p=p->sibling;
-				index++;
+				while(p&&p->sibling)
+					p=p->sibling;//移到到最后的兄弟节点处 
+				index++;//过滤了分号 
 			}
 		 } 
 	}//end of while

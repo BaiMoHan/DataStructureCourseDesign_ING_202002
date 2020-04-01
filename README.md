@@ -49,3 +49,18 @@ This is my data structure course design in Huazhong University of Science and Te
 32. Parameter identifying 1.0 without array
 33. Identifier bug remove
 34. FunctionDeclaration() end 
+35. ExvarDeclaration()
+36. Deal with comment in DeclarationList()
+37. Add funcdef node
+38. Localvardecla
+39. Remove bug of localvar
+40. Add CompoundStmd() and StatementList()
+41. Rewrite enum tokentype enum
+42. Add op levels
+43. Add expression()
+44. Printcfile 1.0
+45. Printcfile finished 1.0+
+46. Add error of counple letemeter
+47. Deal with if-else
+48. Add while
+49. Localvar() finished

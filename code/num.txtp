@@ -4,12 +4,10 @@
 #include<iostream>
 int  fun ( int  oo , char  b ) 
 {   
-    int  ck ;
-    char  ch ;
-    double  dl ;
-    break ;
-    break ;
-    ( ( a > b && a == 1 ) || c > d ) 
+    int  ck , d ;
+    double  d1 , d2 ;
+    float  f1 , f2 ;
+    const char  c ;
 }  
 int  func ( int  a , int  v , int  array [ ] [ ] [ ] , double  array1 [ ] , char  c , float  k ) ;//5
 int  on ;
