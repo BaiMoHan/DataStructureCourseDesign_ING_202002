@@ -358,13 +358,11 @@ syntaxtree Lexer::Statement()
 		case ID:{
 			if(tokenlist[index+1].tokentype==BRACKETL)	//判断是否是函数调用
 			{
-				p=CallFunc();
-				index++;
-				if(tokenlist[index].tokentype!=SEMI)
-				{
-					errorflag=1;
+				p=CallFunc();//出来时index指向; 
+				if(errorflag)	//如果出错 
 					return NULL;
-				}
+//				index++;	//索引自增 
+				
 			 } 
 			else
 			{
@@ -1109,6 +1107,12 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("函数%s调用",tokenlist[p->listindex].tokenstring.c_str()); 
 			break;
 		}
+		
+		case callmeter:{	//处理函数调用的形参
+			PrintSpace(step);	//输出前置空格
+			printf("传入形参：%s",tokenlist[p->listindex].tokenstring.c_str()); 
+			break;
+		} 
 		
 	 }//end of switch
   } 

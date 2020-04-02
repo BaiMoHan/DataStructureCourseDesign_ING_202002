@@ -246,25 +246,32 @@ syntaxtree Lexer::CallFunc()
 	p->kind=callfunc;//设置节点识别码为callfunc
 	p->listindex=index;	//保存函数名 
 	index=index+2;
-//	syntaxtree t=new;
-//	while(tokenlist[index].tokentype!=BRACKETR)	//遇到右括号就退出
-//	{
-//		syntaxtree q=new syntaxnode;	//为复合语句节点申请空间
-//		if(q==NULL)		//判断空间是否申请成功
-//		{
-//			//输出信息 
-//			printf("内存申请失败！\n内存不够，自动关闭\n");
-//			getchar();getchar();	//等待用户响应 
-//			exit(0);
-//		 } 
-//		q->child=NULL;	//初始化孩子节点 
-//		q->sibling=NULL; //初始化兄弟节点
-//		q->kind=callmeter;//设置节点识别码为callmeter
-//		
-//	 } 
-	p->child=Identifier(0);	//此时index已经走到了下一位
-	if(tokenlist[index].tokentype==BRACKETR)
-		return p; 
+	syntaxtree q=p;//保存节点初始地址 
+	p->child=Identifier(0);//函数形参调用
+	if(errorflag)	//如果出错 
+		return NULL; 
+	p->child->kind=callmeter;	//调整节点类型 
+	p=p->child;	//移到树的下一层，即孩子节点 
+	while(tokenlist[index].tokentype==COMMA)	//遇到右括号就退出
+	{
+		index++;		//过滤逗号 
+		p->sibling=Identifier(0);//函数形参调用标识符识别函数
+		if(errorflag)	//遇到错误 
+			return NULL; 
+		p->sibling->kind=callmeter;	//修改节点的类型为callmeter
+		while(p&&p->sibling)	//找到最后的兄弟节点 
+			p=p->sibling; 	//移到到最后的兄弟节点 	
+	 } 
+	//上述循环退出来肯定就是遇到了） 
+	index++;	//过滤）
+	if(tokenlist[index].tokentype==SEMI)	//函数调用后面是分号 
+		return q; 
+	else
+	{
+		errorflag=1;	//错误置为1
+		printf("Error:Expected a ';';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return NULL;
+	 } 
 
  } 
 
