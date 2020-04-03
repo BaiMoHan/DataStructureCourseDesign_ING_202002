@@ -348,10 +348,9 @@ syntaxtree Lexer::Statement()
 	switch(tokenlist[index].tokentype){	//根据词法识别码来处理语句
 		
 		case IF:{	//分析条件语句 
-//			index++;
 			p=IfState();	//调用if语句
-			if(tokenlist[index].tokentype==SEMI)
-				index++; 
+			if(erroflag)	//如果出错 
+				return NULL;//返回NULL 
 			break;
 		}
 		
@@ -413,7 +412,6 @@ syntaxtree Lexer::Statement()
 		} 
 		
 		case LP:{	//遇到左花括号，就是复合语句
-//			index++;//过滤{ 
 			p=CompoundStmd();//调用复合语句处理 
 			break;
 		} 
