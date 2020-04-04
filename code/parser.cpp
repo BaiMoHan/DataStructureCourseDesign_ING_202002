@@ -248,9 +248,9 @@ status Lexer::FunctionDefine()
 			 {
 			 	return ERROR;//返回错误值 
 			  } 
-			if(tokenlist[index].tokentype==RP)
+			if(!errorflag)
 			{
-				index++;
+//				index++;
 				return OK;
 			 } 
 			else
@@ -310,6 +310,7 @@ syntaxtree Lexer::CompoundStmd()
 		printf("Error:Expected a '}';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 		return NULL;//返回NULL 
 	}
+	index++;//索引自增 
 	return q;	
  } 
 /*************************************************
@@ -349,19 +350,21 @@ syntaxtree Lexer::Statement()
 		
 		case IF:{	//分析条件语句 
 			p=IfState();	//调用if语句
-			if(erroflag)	//如果出错 
+			if(errorflag)	//如果出错 
 				return NULL;//返回NULL 
 			break;
 		}
 		
+		case INTCONST:
+		case FLOATCONST:
+		case DOUBLECONST:
+		case LONGCONST:
 		case ID:{
 			if(tokenlist[index+1].tokentype==BRACKETL)	//判断是否是函数调用
 			{
 				p=CallFunc();//出来时index指向; 
 				if(errorflag)	//如果出错 
 					return NULL;
-//				index++;	//索引自增 
-				
 			 } 
 			else
 			{
@@ -375,18 +378,18 @@ syntaxtree Lexer::Statement()
 					return NULL;
 				 } 
 			}
-			index++;
+			index++;//过滤分号 
 			break;
 		} 
 		case RETURN:{
-			p=ReturnState();//调用ReturnState处理
+			p=ReturnState();//调用ReturnState处理,出来时指向分号 
 			index++;	//读取下一个词 
 			break;
 		} 
 		
 		case BRACKETL:{	//遇到（
 			index++;
-			p=Expression();
+			p=Expression();//出来时指向） 
 			if(errorflag||tokenlist[index].tokentype!=BRACKETR)//如果有错误或者不是因为）结束
 			{ 
 				errorflag=1;	//错误标记置1
@@ -401,18 +404,19 @@ syntaxtree Lexer::Statement()
 		} 
 		
 		case BREAK:{	//break语句
-			p=BreakState(); 
-//			return p;
+			p=BreakState(); //出来时指向分号的下一位 
 			break;
 		} 
 		
 		case CONTINUE:{	//continue语句 
-			p=ContinueState(); 
+			p=ContinueState(); //出来时指向分号的下一位 
 			break;
 		} 
 		
 		case LP:{	//遇到左花括号，就是复合语句
-			p=CompoundStmd();//调用复合语句处理 
+			p=CompoundStmd();//调用复合语句处理
+			if(errorflag)	//如果遇到错误
+				return NULL; 
 			break;
 		} 
 		
@@ -1072,13 +1076,13 @@ void Lexer::PrintTree(syntaxtree& root)
 		
 		case ifnode:{	//处理单纯if句
 			PrintSpace(step);	//输出前置空格
-			printf("条件句 if型"); 
+			printf("分支结构 if型"); 
 			break;
 		}
 		
 		case ifelsenode:{	//处理ifelse型
 			PrintSpace(step);	//输出前置空格
-			printf("条件句 if-else型"); 
+			printf("分支结构 if-else型"); 
 			break;
 		}
 		
@@ -1099,6 +1103,7 @@ void Lexer::PrintTree(syntaxtree& root)
 			printf("else："); 
 			break;
 		}
+		
 		
 		case callfunc:{	//函数调用
 			PrintSpace(step);	//输出前置空格

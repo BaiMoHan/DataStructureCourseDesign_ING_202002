@@ -103,7 +103,6 @@ syntaxtree Lexer::IfState()
 	p->child=NULL;	//初始化孩子节点 
 	p->sibling=NULL; //初始化兄弟节点
 	p->kind=ifnode;//设置节点识别码为ifnode
-//	q=p;	//保存最初的if节点地址 
 	index++;	//取一下词
 	if(tokenlist[index].tokentype==BRACKETL)	//if后紧跟着条件句
 	{
@@ -118,6 +117,7 @@ syntaxtree Lexer::IfState()
 		t->child=NULL;//初始化孩子节点
 		t->sibling=NULL;//初始化兄弟节点
 		t->kind=ifjudge;//节点类型为if条件句
+		index++;	//进入表达式程序时index指向括号后的一位 
 		t->child=Expression();//条件节点的孩子调用表达式处理函数
 		if(errorflag||t->child==NULL)	//判断if条件句是否合法
 		{
@@ -147,7 +147,43 @@ syntaxtree Lexer::IfState()
 		t->sibling=q;	//if子句节点为if节点的孩子,条件句的兄弟节点 
 		if(tokenlist[index].tokentype==LP)	//遇到花括号{
 		{
-			
+			q->child=CompoundStmd();	//调用复合语句处理程序,复合语句处理完后index指向}下一位 
+			if(errorflag)	//如果遇到错误
+			{
+				printf("\nError:Expected correct if statement;Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+				return NULL;
+			 } 
+			if(tokenlist[index].tokentype==ELSE)	//遇到if后跟着else
+			{
+				p->kind=ifelsenode;	//修改p节点的类型为ifeslenode
+				t=t->sibling; //t移到if子句节点上
+				q=new syntaxnode;	//为else节点申请内存
+				if(q==NULL)		//判断空间是否申请成功
+				{
+					//输出信息 
+					printf("内存申请失败！\n内存不够，自动关闭\n");
+					getchar();getchar();	//等待用户响应 
+					exit(0);
+				 } 
+				q->child=NULL;	//初始化孩子节点
+				q->sibling=NULL;//初始化兄弟节点
+				q->kind=elsenode;	//节点类型为else节点
+				t->sibling=q;	//else节点为if子句节点的兄弟
+				index++;	//读取else的后面一个词语
+				q->child=Statement();	//调用语句处理程序,处理else后面的语句作为else节点的孩子
+				if(errorflag||q->child==NULL)//如果else后面处理错误
+				{
+					errorflag=1;	//错误标记置1
+					printf("\nError:Expected correct else statement;Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+					return NULL;
+				 } 
+				else
+					return p;	//if-else处理成功返回p节点地址  
+			 }	
+			else	//if后没有else,单纯的if型 
+			{
+				return p;//返回p地址 
+			 } 
 		 } 
 		else	//没有遇到花括号{,if子句只有一条
 		{
@@ -169,8 +205,8 @@ syntaxtree Lexer::IfState()
 			if(tokenlist[index].tokentype==ELSE)	//如果if后有else
 			{
 				p->kind=ifelsenode;	//修改p的类型为ifelse型节点 
-				t=t->sibling;	//t指针移到条件节点上
-				q=new syntaxnode;	//为if子句节点申请内存
+				t=t->sibling;	//t指针移到if子句节点上
+				q=new syntaxnode;	//为else节点申请内存
 				if(q==NULL)		//判断空间是否申请成功
 				{
 					//输出信息 
@@ -182,16 +218,17 @@ syntaxtree Lexer::IfState()
 				q->sibling=NULL;//初始化兄弟节点
 				q->kind=elsenode;	//节点类型为else节点
 				t->sibling=q;	//else节点为if子句节点的兄弟
-				index++;	//读取else的后面一个词
-				if(tokenlist[index].tokentype==LP)	//else遇到{
+				index++;	//读取else的后面一个词语
+				q->child=Statement();	//调用语句处理程序,处理else后面的语句作为else节点的孩子
+				if(errorflag||q->child==NULL)//如果else后面处理错误
 				{
-					
+					errorflag=1;	//错误标记置1
+					printf("\nError:Expected correct else statement;Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
+					return NULL;
 				 } 
-				else	//else语句后不是{,调用expression处理语句
-				{
-					q->child=Statement
-				 } 
-			 } 
+				else
+					return p;	//if-else处理成功返回p节点地址 
+			 } //处理带else型结束 
 			else	//单纯的if型
 			{
 				return p;//返回节点地址 
