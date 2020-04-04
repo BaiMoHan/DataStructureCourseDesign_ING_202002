@@ -52,7 +52,7 @@ syntaxtree Lexer::BreakState()
 	 else	//不是分号，则是错误
 	 {
 	 	errorflag=1;	//设置错误标记 
-	 	printf("Error:Expected a ';';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+	 	printf("\nError:Expected a ';';\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 		return NULL;//返回NULL 
 	  } 
  } 
@@ -81,10 +81,136 @@ syntaxtree Lexer::ContinueState()
 	 else	//不是分号，则是错误
 	 {
 	 	errorflag=1;	//设置错误标记 
-	 	printf("Error:Expected a ';';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+	 	printf("\nError:Expected a ';';\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
 		return NULL;//返回NULL 
 	  } 
  }  
+/*****************************************************************
+函数功能：处理for语句
+*****************************************************************/
+syntaxtree Lexer::ForState()
+{
+	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
+	syntaxtree q=NULL;	//中间指针
+	syntaxtree t=NULL;	//中间指针 
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点
+	p->sibling=NULL;//初始化兄弟节点
+	p->kind=fornode;//节点类型为fornode
+	index++;	//读取for后面的下一个词
+	if(tokenlist[index].tokentype==BRACKETL)	//如果是（,就是正确
+	{
+		index++;	//读取（后的一个词
+		q=new syntaxnode;	//为forstart节点申请内存 
+		if(q==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		q->child=NULL;	//初始化孩子节点
+		q->sibling=NULL;//初始化兄弟节点
+		q->kind=forstart;//设置节点类型为forstart
+		p->child=q;	//forstart节点为for节点的第一个孩子 
+		if(tokenlist[index].tokentype!=SEMI)//如果不是for(;XXX;XXX)形式
+		{
+			q->child=Expression();//调用表达式语句处理程序
+			if(errorflag)	//如果遇到错误 
+				return NULL;
+			if(tokenlist[index].tokentype!=SEMI)	//如果不是因为分号退出的
+			{
+				errorflag=1;	//错误标记
+				printf("\nError:Expected a ';' in for condition;\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+				return NULL;//返回NULL  
+			 } 
+		 } 
+		index++;	//索引自增,读取;后的下一个词
+		t=new syntaxnode;	//为forjudge节点申请内存 
+		if(t==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		t->child=NULL;	//初始化孩子节点
+		t->sibling=NULL;//初始化兄弟节点
+		t->kind=forjudge;//设置节点类型为forjudge
+		q->sibling=t;	//forjudge节点为forstart节点的兄弟 
+		q=q->sibling;	//q指针移动到forjudge节点上 
+		if(tokenlist[index].tokentype!=SEMI)//如果不是for(;;XXX)形式
+		{
+			t->child=Expression();//调用表达式语句处理程序
+			if(errorflag)	//如果遇到错误 
+				return NULL;
+			if(tokenlist[index].tokentype!=SEMI)	//如果不是因为分号退出的
+			{
+				errorflag=1;	//错误标记
+				printf("\nError:Expected a ';' in for condition;\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+				return NULL;//返回NULL  
+			 } 
+		 } 
+		index++;	//索引自增,读取;后的下一个词
+		t=new syntaxnode;	//为forchange节点申请内存 
+		if(t==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		t->child=NULL;	//初始化孩子节点
+		t->sibling=NULL;//初始化兄弟节点
+		t->kind=forchange;//设置节点类型为forchange
+		q->sibling=t;	//forchange节点为forjudge节点的兄弟 
+		q=q->sibling;	//q指针移动到forchange节点上 
+		if(tokenlist[index].tokentype!=BRACKETR)//如果不是for(XX;XX;)形式
+		{
+			t->child=Expression();//调用表达式语句处理程序
+			if(errorflag)	//如果遇到错误 
+				return NULL;
+			if(tokenlist[index].tokentype!=BRACKETR)	//如果不是因为)退出的
+			{
+				errorflag=1;	//错误标记
+				printf("\nError:Expected a ';' in for condition;\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+				return NULL;//返回NULL  
+			 } 
+		 } 
+		index++;	//索引自增
+		t=new syntaxnode;	//为forstate节点申请内存 
+		if(t==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		t->child=NULL;	//初始化孩子节点
+		t->sibling=NULL;//初始化兄弟节点
+		t->kind=forstate;//设置节点类型为forstate
+		q->sibling=t;	//forstate节点为forchange节点的兄弟节点
+		t->child=Statement();	//for子句调用语句处理函数
+		if(errorflag)	//如果遇到错误
+		{
+			printf("\nError:Expected a ';' in for condition;\nLocaterd on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			return NULL;//返回NULL  
+		 } 
+		return p;	//返回p节点地址 
+	 } 
+	else	//for后面不是跟着（,就是错误
+	{
+		errorflag=1;	//错误标记
+		printf("\nError:Expected () after for;\nLocaterd on line No.%d\nnear chararctor '%s' \n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return NULL;//返回NULL 	 
+	 } 
+ } 
 /**************************************************************
 函数功能：处理if语句
 *****************************************************************/
@@ -241,131 +367,6 @@ syntaxtree Lexer::IfState()
 		printf("\nError:Expected if condition charactor '(';Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
 		return NULL;		 
 	 } 
-//	if(tokenlist[index].tokentype==BRACKETL)	//正确状况下,下一个词是(
-//	{
-//		syntaxtree q=new syntaxnode;	//为if条件语句节点申请空间
-//		if(q==NULL)		//判断空间是否申请成功
-//		{
-//			//输出信息 
-//			printf("内存申请失败！\n内存不够，自动关闭\n");
-//			getchar();getchar();	//等待用户响应 
-//			exit(0);
-//		 } 
-//		q->child=NULL;	//初始化孩子节点 
-//		q->sibling=NULL;//初始化兄弟节点
-//		q->kind=ifjudge;	//节点类型为ifdge
-//		index++;
-//		q->child=Expression();		//调用Expression子程序处理条件表达式
-//		if(q->child==NULL&&!errorflag||tokenlist[index].tokentype!=BRACKETR) 	//判断条件句是否出错
-//		{
-//			errorflag=1;
-//			return NULL;	//返回NULL	
-//		}
-//		index++; 
-//		p->child=q;		//条件句作为if节点的第一个孩子 
-//		if(tokenlist[index].tokentype==LP)	//如果是{
-//		{
-//			syntaxtree t=new syntaxnode;	//为if子句节点申请空间
-//			if(t==NULL)		//判断空间是否申请成功
-//			{
-//				//输出信息 
-//				printf("内存申请失败！\n内存不够，自动关闭\n");
-//				getchar();getchar();	//等待用户响应 
-//				exit(0);
-//			 }  
-//			t->child=NULL;
-//			t->sibling=NULL;
-//			t->kind=ifcmsd;	//设置if子句节点类型为ifcmsd 
-//			t->child=CompoundStmd();	//调用复合语句处理程序
-//			q->sibling=t;		//作为条件节点的兄弟节点 
-//			if(errorflag)	//判断是否出错 
-//				return NULL;
-//
-//			index++;	//缩进自增 
-//			if(tokenlist[index].tokentype==ELSE)	//遇到else子句 
-//			{
-//				syntaxtree t2=new syntaxnode;		//为else节点申请空间
-//				if(t2==NULL)		//判断空间是否申请成功
-//				{
-//					//输出信息 
-//					printf("内存申请失败！\n内存不够，自动关闭\n");
-//					getchar();getchar();	//等待用户响应 
-//					exit(0);
-//				 }   
-//				t2->child=NULL;
-//				t2->sibling=NULL;
-//				t2->kind=elsenode;
-//				index++;	//Expression进入时无index++，退出时index指向;或） 
-//				t2->child=Expression();//调用语句处理程序
-//				if(t2->child==NULL||errorflag)	//如果无子句或者遇到错误
-//				{
-//					errorflag=1;	//错误标记置1
-//					printf("\nError:Expected correct else expression;Located on line No.%d\nafter else",tokenlist[index].linenum);
-//					return NULL; 
-//				 } 
-//				p->kind=ifelsenode;	//如果没有错误就要修改if节点的类型为ifelsenode 
-//				t->sibling=t2;	//t2为if子句的兄弟节点
-//				return p;		//返回if最初的节点 
-//			} 
-//			return p;	//没有else直接返回 
-//		 } //处理if复合语句的结束 
-//		else	//不是复合语句，就是只有一条表达式
-//		{
-//			syntaxtree t=new syntaxnode;	//为if子句节点申请空间
-//			if(t==NULL)		//判断空间是否申请成功
-//			{
-//				//输出信息 
-//				printf("内存申请失败！\n内存不够，自动关闭\n");
-//				getchar();getchar();	//等待用户响应 
-//				exit(0);
-//			 }  
-//			t->child=NULL;
-//			t->sibling=NULL;
-//			t->kind=ifcmsd;	//设置if子句节点类型为ifcmsd
-//			t->child=Expression();	//调用语句处理程序
-//			q->sibling=t;	//作为条件节点的兄弟节点 
-//			if(errorflag||tokenlist[index].tokentype!=SEMI)
-//			{
-//				errorflag=1;	//错误标记置1
-//				printf("\nError:Expected the end of experssion is ';';Located on line No.%d\nnear chararctor '%s'\n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str()); 
-//				return NULL;
-//			 } 
-//			index++; 
-//			if(tokenlist[index].tokentype==ELSE)	//遇到else子句 
-//			{
-//				syntaxtree t2=new syntaxnode;		//为else节点申请空间
-//				if(t2==NULL)		//判断空间是否申请成功
-//				{
-//					//输出信息 
-//					printf("内存申请失败！\n内存不够，自动关闭\n");
-//					getchar();getchar();	//等待用户响应 
-//					exit(0);
-//				 }   
-//				t2->child=NULL;
-//				t2->sibling=NULL;
-//				t2->kind=elsenode;
-//				t2->child=Expression();//调用语句处理程序
-//				if(t2->child==NULL||errorflag)	//如果无子句或者遇到错误
-//				{
-//					errorflag=1;	//错误标记置1
-//					printf("\nError:Expected correct else expression;Located on line No.%d\nafter else",tokenlist[index].linenum);
-//					return NULL; 
-//				 } 
-//				p->kind=ifelsenode;	//如果没有错误就要修改if节点的类型为ifelsenode 
-//				t->sibling=t2;	//t2为if子句的兄弟节点
-//				return p;		//返回if最初的节点 
-//			} 
-//			return p;	//没有else直接返回 
-//		 } 
-//		index++;	//索引自增
-//		return p;	//返回根节点 
-//	 } 
-//	 else	//不是(，则是错误
-//	 {
-//	 	errorflag=1;	//设置错误标记 
-//	 	printf("Error:Expected a '(';\nLocaterd on line No.%d near chararctor '%s' ",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
-//		return NULL;//返回NULL 
-//	  } 
  } 
 /********************************************************************
 函数功能：处理函数调用语句,传进来的时候，index指向的还是标识符 

@@ -349,11 +349,18 @@ syntaxtree Lexer::Statement()
 	switch(tokenlist[index].tokentype){	//根据词法识别码来处理语句
 		
 		case IF:{	//分析条件语句 
-			p=IfState();	//调用if语句
+			p=IfState();	//调用if语句处理程序 
 			if(errorflag)	//如果出错 
 				return NULL;//返回NULL 
 			break;
 		}
+		
+		case FOR:{	//分析for语句
+			p=ForState(); //调用for语句处理程序 
+			if(errorflag)	//如果出错 
+				return NULL;//返回NULL 
+			break;
+		} 
 		
 		case INTCONST:
 		case FLOATCONST:
@@ -1104,6 +1111,44 @@ void Lexer::PrintTree(syntaxtree& root)
 			break;
 		}
 		
+		case fornode:{	//处理for节点
+			PrintSpace(step);//输出前置空格
+			printf("for循环语句："); 
+			break;
+		}
+		
+		case forstart:{	//处理for初始条件节点
+			PrintSpace(step);//输出前置空格
+			printf("for初始表达式："); 
+			if(p->child==NULL)	//判断是否为空
+				printf("空"); 
+			break;
+		}
+		
+		case forjudge:{	//处理for判断句
+			PrintSpace(step);//输出前置空格
+			printf("for循环判断表达式："); 
+			if(p->child==NULL)//判断是否为空
+				printf("空"); 
+			break;
+		}
+		
+		
+		case forchange:{//处理for更新语句
+			PrintSpace(step);//输出前置空格
+			printf("for迭代表达式：");
+			if(p->child==NULL)	//判断是否为空
+				printf("空"); 
+			break;
+		}
+		
+		case forstate:{	//处理for子句
+			PrintSpace(step);//输出前置空格
+			printf("for子句："); 
+			if(p->child==NULL)	//判断是否为空
+				printf("空"); 
+			break;
+		}
 		
 		case callfunc:{	//函数调用
 			PrintSpace(step);	//输出前置空格
