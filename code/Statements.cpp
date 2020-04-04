@@ -211,6 +211,80 @@ syntaxtree Lexer::ForState()
 		return NULL;//返回NULL 	 
 	 } 
  } 
+/*********************************************************************
+函数功能：处理while语句
+********************************************************************/
+syntaxtree Lexer::WhileState()
+{
+	syntaxtree p=new syntaxnode;	//为复合语句节点申请空间
+	syntaxtree q=NULL;	//中间指针
+	syntaxtree t=NULL;	//中间指针 
+	if(p==NULL)		//判断空间是否申请成功
+	{
+		//输出信息 
+		printf("内存申请失败！\n内存不够，自动关闭\n");
+		getchar();getchar();	//等待用户响应 
+		exit(0);
+	 } 
+	p->child=NULL;	//初始化孩子节点 
+	p->sibling=NULL; //初始化兄弟节点
+	p->kind=whilenode;//设置节点识别码为ifnode
+	index++;	//读取while后的下一个词
+	if(tokenlist[index].tokentype==BRACKETL)//理想情况下是while(
+	{
+		index++;	//读取(后的下一个词
+		q=new syntaxnode;//为whilejudge节点申请内存 
+		if(q==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		q->child=NULL;	//初始化孩子节点 
+		q->sibling=NULL; //初始化兄弟节点
+		q->kind=whilejudge;//设置节点识别码为whilejudge
+		p->child=q;	//whilejudge节点为whilenode节点的孩子
+		q->child=Expression();	//调用表达式处理程序处理while条件句
+		if(tokenlist[index].tokentype==SEMI)	//如果是因为分号才退出的
+		{
+			errorflag=1;
+			printf("\nError:Expected no ; in while-condition;\nLocaterd on line No.%d\nnear chararctor '%s' \n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			return NULL;//返回NULL 	 
+		 } 
+		if(errorflag)//如果出现错误 
+		{
+			printf("\nError:Expected correct while-condition expression;\nLocaterd on line No.%d\nnear chararctor '%s' \n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			return NULL;//返回NULL 	 
+		}
+		index++;//索引自增
+		t=new syntaxnode;//为whilestate节点申请内存 
+		if(t==NULL)		//判断空间是否申请成功
+		{
+			//输出信息 
+			printf("内存申请失败！\n内存不够，自动关闭\n");
+			getchar();getchar();	//等待用户响应 
+			exit(0);
+		 } 
+		t->child=NULL;	//初始化孩子节点 
+		t->sibling=NULL; //初始化兄弟节点
+		t->kind=whilestate;//设置节点识别码为whilestate
+		q->sibling=t;	//whilestate节点为whilejudge节点的兄弟 
+		t->child=Statement();	//调用表达式处理程序处理while条件句
+		if(errorflag)//如果出现错误 
+		{
+			printf("\nError:Expected correct while-state expression;\nLocaterd on line No.%d\nnear chararctor '%s' \n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+			return NULL;//返回NULL 	 
+		}
+		return p;	//返回whilenode节点地址 
+	 } 
+	else	//不是while(，就是错误
+	{
+		errorflag=1;
+		printf("\nError:Expected () after while;\nLocaterd on line No.%d\nnear chararctor '%s' \n",tokenlist[index].linenum,tokenlist[index].tokenstring.c_str());
+		return NULL;//返回NULL 	 
+	 } 
+ } 
 /**************************************************************
 函数功能：处理if语句
 *****************************************************************/

@@ -1162,6 +1162,24 @@ void Lexer::PrintTree(syntaxtree& root)
 			break;
 		} 
 		
+		case whilenode:{	//处理while节点
+			PrintSpace(step);//输出前置空格
+			printf("while循环语句：") ; 
+			break;
+		} 
+		
+		case whilejudge:{	//处理whilejudge节点
+			PrintSpace(step);//输出前置空格
+			printf("while循环判断表达式："); 
+			break;
+		}
+		
+		case whilestate:{	//处理while子句节点
+			PrintSpace(step);//输出前置空格
+			printf("while子句："); 
+			break;
+		}
+		
 	 }//end of switch
   } 
 /***********************************************************
