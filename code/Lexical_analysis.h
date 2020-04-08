@@ -60,7 +60,7 @@ class Lexer	//词法分析类
 		syntaxtree Parameter();	//形参处理函数 
 		syntaxtree TypeSpecifier();			//类型声明处理函数
 		syntaxtree Identifier(int state);			//标识符处理函数 
-		 
+		
 		
 		
 		syntaxtree CompoundStmd();		//复合语句处理函数
@@ -78,7 +78,8 @@ class Lexer	//词法分析类
 		syntaxtree CallFunc();		//处理函数调用
 		syntaxtree ForState();		//处理for语句 
 		syntaxtree WhileState();	//处理while语句 
-		 
+		
+		status PrintWordsFile();	//输出词法识别到文件中 
 		status PrintCFile();		//输出缩进文件
 		status PrintBlock(FILE* fp,int step);//语句块输出 
 		 

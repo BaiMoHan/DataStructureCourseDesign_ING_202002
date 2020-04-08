@@ -394,6 +394,12 @@ syntaxtree Lexer::Statement()
 			break;
 		} 
 		
+		case WHILE:{
+			p=WhileState();//调用while处理程序
+			if(errorflag)
+				return NULL; 
+			break;
+		}
 		case BRACKETL:{	//遇到（
 			index++;
 			p=Expression();//出来时指向） 
