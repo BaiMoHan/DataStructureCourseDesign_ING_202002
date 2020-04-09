@@ -1,8 +1,10 @@
-#include<sykh.h>
+/*******************
+程序********************/
+#include<sykh.h>//引用文件
 #include<stdio.h>
 #include<ioman.p>
 #include<iostream>
-int fun(int oo,char b)
+int main(int oo,char b)
 {
 int ck,d;
 double d1,d2;

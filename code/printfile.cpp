@@ -425,5 +425,7 @@ status Lexer::PrintWordsFile()
 			}				
 		}
 	 } 
+	fclose(fp);
+	return OK;
  } 
 #endif

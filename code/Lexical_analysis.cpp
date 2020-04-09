@@ -44,7 +44,8 @@ Lexer::Lexer()
 	if(DFAflag)			//如果词法分析成功
 	{ 
 		 PrintWords();	//打印词法分析的结果 
-		 PrintWordsFile();
+		 if(PrintWordsFile()==OK)
+		 printf("输出词法到文件中成功！"); 
 		 printf("\n\n上述为词法分析结果，无错误，下面进行语法分析"); 
 		if(Program()==OK)
 		{

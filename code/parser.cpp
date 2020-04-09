@@ -75,9 +75,7 @@ status Lexer::Program()	//程序语法分析函数开始
 		DeleteTree(root);
 		printf("\n遇到语法树分析错误，已经释放语法树内存空间完毕！\n"); 
 		return ERROR;
-	} 
-	 
-//	 PrintTree(root); 
+	}
   
  } 
 
@@ -199,7 +197,7 @@ status Lexer::DeclarationList()	//声明序列语法分析
 	q->listindex=index++;	//保存tokenlist中索引
 	q->child=NULL;			//函数返回值类型节点无孩子
 	p->child=q;				//函数返回值类型节点是外部函数声明节点的孩子
-	if(tokenlist[index].tokentype!=ID)	//如果类型之后不是标识符
+	if(tokenlist[index].tokentype!=ID&&tokenlist[index].tokentype!=MAIN)	//如果类型之后不是标识符,或者main 
 		return ERROR;	//返回错误值 
 	p=new syntaxnode;		//为函数名节点申请空间
 	if(p==NULL)		//判断空间是否申请成功
@@ -237,7 +235,6 @@ status Lexer::FunctionDefine()
 		index++;	//调用FunctionDeclaration()后index指向的是）
 		if(tokenlist[index].tokentype==LP)
 		{
-//			index++;
 			T=T->child;	//移到下一层语法树
 			while(T&&T->sibling)	//找到该层最后的兄弟节点
 			{
@@ -250,7 +247,6 @@ status Lexer::FunctionDefine()
 			  } 
 			if(!errorflag)
 			{
-//				index++;
 				return OK;
 			 } 
 			else
