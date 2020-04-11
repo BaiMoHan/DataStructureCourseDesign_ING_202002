@@ -1,6 +1,8 @@
 /*******************
-程序********************/
-#include<sykh.h>//引用文件
+program@peihan
+charactor must be ASCII
+********************/
+#include<sykh.h>//extern file
 #include<stdio.h>
 #include<ioman.p>
 #include<iostream>

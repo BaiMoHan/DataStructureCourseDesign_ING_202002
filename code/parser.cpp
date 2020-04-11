@@ -110,8 +110,11 @@ status Lexer::DeclarationList()	//声明序列语法分析
 				if(FunctionDeclaration()==OK)	//如果函数声明分析程序返回正确值
 				{
 					index=index+2;	//索引自增 
-					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR 
+					if(DeclarationList()==ERROR)//如果是声明序列返回值出现问题就返回ERROR
+					{ 
+						printf("\n声明序列出现错误！\n"); 
 						return ERROR;
+					}
 					else
 						return OK;
 				 } 
